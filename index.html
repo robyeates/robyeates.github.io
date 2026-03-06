@@ -1,1744 +1,196 @@
-<!DOCTYPE html>
-<html lang="en">
+<canvas id="canvas"></canvas>
+<h1>Robert Yeates</h1>
+<p>click anywhere</p>
+
+<!-- ripped from https://codepen.io/deanwagman/pen/EjLBdQ while I build something :) -->
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synkrisis — Compliance as a Service</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Megrim" rel="stylesheet">
     <style>
-        /* ═══════════════════════════════════════════════════════
-           SYNKRISIS · FULL BUILD · FT EDITORIAL DESIGN SYSTEM
-           Ground: #FFF1E5  Paper: #FFFFFF  Ink: #33302E
-           Accent: Claret #990F3D  Data: Teal #0D7680
-           Type: Lora (head) · Source Sans 3 (body) · DM Mono
-        ═══════════════════════════════════════════════════════ */
-        :root {
-            --salmon:   #FFF1E5;
-            --cream:    #FAF7F2;
-            --paper:    #FFFFFF;
-            --rule:     #D9D0C4;
-            --rule-lt:  #EDE8E0;
-            --ink:      #33302E;
-            --ink-mid:  #595650;
-            --ink-soft: #807A73;
-            --claret:   #990F3D;
-            --claret-lt:#FCF0F4;
-            --claret-md:#C41E5A;
-            --teal:     #0D7680;
-            --teal-lt:  #EAF4F5;
-            --teal-dim: rgba(13,118,128,.10);
-            --rr:       #CC0000; --rr-bg: #FFF5F5;
-            --ra:       #B35C00; --ra-bg: #FFF8F0;
-            --rg:       #0A6640; --rg-bg: #F0F9F4;
-            --fh: 'Lora', Georgia, serif;
-            --fb: 'Source Sans 3', sans-serif;
-            --fm: 'DM Mono', monospace;
-            --s0: 0 1px 2px rgba(51,48,46,.06);
-            --s1: 0 2px 8px rgba(51,48,46,.08);
-            --s2: 0 6px 20px rgba(51,48,46,.12);
-            --s3: 0 16px 48px rgba(51,48,46,.15);
-            --r: 4px;
-        }
-        *{margin:0;padding:0;box-sizing:border-box;}
-        html,body{height:100%;overflow:hidden;}
-        body{background:var(--salmon);color:var(--ink);font-family:var(--fb);font-size:13px;display:flex;flex-direction:column;}
-        ::-webkit-scrollbar{width:5px;height:5px;}
-        ::-webkit-scrollbar-track{background:transparent;}
-        ::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px;}
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+canvas {
+  border: 1px soild black;
+}
+h1 {
+  display: inline-block;
+  padding: .3em;
+  font-family: 'Megrim', cursive;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  user-select: none;
+  transform: translate(-50%,-50%);
+  color: rgba(255,255,255,.68);
+}
+p {
+  display: inline-block;
+  padding: .3em;
+  font-family: 'Megrim', cursive;
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  user-select: none;
+  transform: translate(-50%,-50%);
+  color: rgba(255,255,255,.68);
+  border: .075em solid rgba(255,255,255,.1);
+}
 
-        /* ── MASTHEAD ──────────────────────────────────── */
-        .mast{height:52px;background:var(--paper);border-bottom:2px solid var(--ink);display:flex;align-items:stretch;flex-shrink:0;z-index:300;}
-        .mast-brand{display:flex;align-items:center;gap:10px;padding:0 20px;border-right:1px solid var(--rule);text-decoration:none;flex-shrink:0;}
-        .mast-icon{width:30px;height:30px;background:var(--claret);border-radius:3px;display:grid;place-items:center;}
-        .mast-icon svg{width:16px;height:16px;}
-        .mast-words{display:flex;flex-direction:column;line-height:1.15;}
-        .mast-name{font-family:var(--fh);font-size:15px;font-weight:700;color:var(--ink);}
-        .mast-sub{font-size:9px;font-weight:500;color:var(--ink-soft);letter-spacing:.12em;text-transform:uppercase;}
-        .mast-nav{display:flex;align-items:stretch;padding:0 6px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
-        .mast-nav::-webkit-scrollbar{display:none;}
-        .mnav-tab{display:flex;align-items:center;gap:6px;padding:0 14px;font-size:13px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;margin-bottom:-2px;transition:all .15s;flex-shrink:0;}
-        .mnav-tab:hover{color:var(--ink);border-bottom-color:var(--rule);}
-        .mnav-tab.on{color:var(--claret);border-bottom-color:var(--claret);font-weight:600;}
-        .mast-right{margin-left:auto;display:flex;align-items:center;gap:10px;padding-right:18px;flex-shrink:0;}
-        .role-sw{display:flex;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;background:var(--cream);}
-        .role-btn{padding:5px 11px;font-size:11.5px;font-weight:500;cursor:pointer;color:var(--ink-soft);border:none;background:transparent;font-family:var(--fb);transition:all .12s;}
-        .role-btn.on{background:var(--claret);color:#fff;font-weight:600;}
-        .mav{width:30px;height:30px;border-radius:50%;background:var(--claret);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;}
-        .mbell{width:30px;height:30px;border:1px solid var(--rule);border-radius:var(--r);display:grid;place-items:center;cursor:pointer;font-size:14px;position:relative;}
-        .mbell-pip{position:absolute;top:6px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--ra);border:1.5px solid var(--paper);}
 
-        /* ── SUB-BAR ───────────────────────────────────── */
-        .subbar{height:36px;background:var(--cream);border-bottom:1px solid var(--rule);display:flex;align-items:center;padding:0 16px;gap:4px;flex-shrink:0;}
-        .sb-pill{padding:4px 11px;border-radius:20px;font-size:11.5px;font-weight:500;cursor:pointer;color:var(--ink-soft);transition:all .12s;white-space:nowrap;}
-        .sb-pill:hover{background:var(--rule-lt);color:var(--ink);}
-        .sb-pill.on{background:var(--ink);color:#fff;}
-        .sb-sep{width:1px;height:16px;background:var(--rule);margin:0 4px;flex-shrink:0;}
-        .subbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
-        .btn-cta{background:var(--claret);color:#fff;border:none;border-radius:var(--r);padding:6px 14px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap;}
-        .btn-cta:hover{background:var(--claret-md);}
 
-        /* ── LAYOUT ────────────────────────────────────── */
-        .layout{display:flex;flex:1;overflow:hidden;}
-
-        /* ── SIDEBAR ───────────────────────────────────── */
-        .sidebar{width:208px;background:var(--paper);border-right:1px solid var(--rule);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
-        .sb-sec{padding:13px 11px 6px;}
-        .sb-lbl{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding:0 6px;margin-bottom:5px;}
-        .sb-item{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:var(--r);cursor:pointer;color:var(--ink-mid);font-size:13px;transition:all .1s;margin-bottom:1px;}
-        .sb-item:hover{background:var(--cream);color:var(--ink);}
-        .sb-item.on{background:var(--claret-lt);color:var(--claret);font-weight:500;}
-        .sb-flag{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
-        .pip{margin-left:auto;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-        .pip.r{background:var(--rr);} .pip.a{background:var(--ra);} .pip.g{background:var(--rg);}
-        .sb-hr{height:1px;background:var(--rule);margin:6px 11px;}
-        .rag-key{margin:8px 11px 14px;border:1px solid var(--rule);border-radius:var(--r);padding:9px 11px;background:var(--cream);}
-        .rk-title{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:7px;}
-        .rk-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-mid);margin-bottom:4px;}
-
-        /* ── MAIN ──────────────────────────────────────── */
-        .main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-        .screen{display:none;flex:1;flex-direction:column;overflow:hidden;}
-        .screen.on{display:flex;}
-
-        /* ── BUTTONS ───────────────────────────────────── */
-        .btn-p{background:var(--claret);color:#fff;border:none;border-radius:var(--r);padding:8px 16px;font-family:var(--fb);font-size:12.5px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap;}
-        .btn-p:hover{background:var(--claret-md);}
-        .btn-p.teal{background:var(--teal);} .btn-p.teal:hover{background:#0a5a65;}
-        .btn-p.sm{padding:5px 10px;font-size:11.5px;}
-        .btn-s{background:var(--cream);color:var(--ink-mid);border:1px solid var(--rule);border-radius:var(--r);padding:8px 13px;font-family:var(--fb);font-size:12.5px;cursor:pointer;transition:border-color .12s;white-space:nowrap;}
-        .btn-s:hover{border-color:var(--teal);color:var(--teal);}
-        .btn-s.sm{padding:5px 10px;font-size:11.5px;}
-
-        /* ── COMMON COMPONENTS ─────────────────────────── */
-        .page-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid var(--ink);}
-        .ph-flag{font-size:34px;line-height:1;}
-        .ph-h1{font-family:var(--fh);font-size:21px;font-weight:700;margin-bottom:2px;}
-        .ph-sub{font-size:11.5px;color:var(--ink-soft);}
-        .s-pill{padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;margin-left:auto;white-space:nowrap;}
-        .sp-r{background:var(--rr-bg);color:var(--rr);border:1px solid rgba(204,0,0,.2);}
-        .sp-a{background:var(--ra-bg);color:var(--ra);border:1px solid rgba(179,92,0,.2);}
-        .sp-g{background:var(--rg-bg);color:var(--rg);border:1px solid rgba(10,102,64,.2);}
-        .sp-teal{background:var(--teal-lt);color:var(--teal);border:1px solid rgba(13,118,128,.2);}
-
-        .sec-hd{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 9px;display:flex;align-items:center;gap:8px;}
-        .sec-hd::after{content:'';flex:1;height:1px;background:var(--rule);}
-        .sec-hd:first-of-type{margin-top:0;}
-
-        .pv-h2-row{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;margin-top:22px;padding-bottom:7px;border-bottom:2px solid var(--ink);}
-        .pv-h2-row:first-of-type{margin-top:0;}
-        .pv-h2{font-family:var(--fh);font-size:17px;font-weight:700;}
-        .pv-h2-sub{font-size:12px;color:var(--ink-soft);}
-
-        .info-card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:12px;margin-bottom:10px;}
-        .ic-title{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:9px;}
-        .ic-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid var(--rule-lt);color:var(--ink-soft);}
-        .ic-row:last-child{border-bottom:none;}
-        .ic-row strong{color:var(--ink);font-weight:500;}
-
-        .rag-label{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;}
-        .rag-label::before{content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-        .rag-label.r::before{background:var(--rr);} .rag-label.a::before{background:var(--ra);} .rag-label.g::before{background:var(--rg);}
-        .rag-label.r{color:var(--rr);} .rag-label.a{color:var(--ra);} .rag-label.g{color:var(--rg);}
-
-        .own-tag{font-size:9px;padding:2px 6px;border-radius:2px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0;}
-        .ot-c{background:var(--teal-lt);color:var(--teal);}
-        .ot-p{background:var(--cream);color:var(--ink-soft);border:1px solid var(--rule);}
-
-        .indic{background:var(--teal-lt);border:1px solid rgba(13,118,128,.25);border-radius:var(--r);padding:8px 13px;margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--teal);}
-        .indic-badge{background:var(--teal);color:#fff;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;flex-shrink:0;}
-        .ai-badge{background:var(--teal);color:#fff;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;flex-shrink:0;}
-
-        /* ── PROGRESS BAR ──────────────────────────────── */
-        .prog-wrap{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;box-shadow:var(--s0);}
-        .prog-lbl{font-size:12px;color:var(--ink-soft);white-space:nowrap;}
-        .prog-trk{flex:1;height:5px;background:var(--rule-lt);border-radius:3px;overflow:hidden;}
-        .prog-bar{height:100%;background:var(--teal);border-radius:3px;transition:width .5s;}
-        .prog-num{font-family:var(--fh);font-size:16px;font-weight:700;color:var(--teal);white-space:nowrap;}
-
-        /* ── DOCUMENT ROW ──────────────────────────────── */
-        .doc-row{display:flex;align-items:stretch;background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--rule);border-radius:var(--r);margin-bottom:5px;box-shadow:var(--s0);overflow:hidden;transition:box-shadow .12s;}
-        .doc-row:hover{box-shadow:var(--s1);}
-        .doc-row.dr-r{border-left-color:var(--rr);}
-        .doc-row.dr-a{border-left-color:var(--ra);}
-        .doc-row.dr-g{border-left-color:var(--rg);background:var(--rg-bg);}
-        .doc-main{display:flex;align-items:center;gap:9px;flex:1;padding:10px 12px;cursor:pointer;min-width:0;}
-        .doc-rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-        .doc-rdot.r{background:var(--rr);} .doc-rdot.a{background:var(--ra);} .doc-rdot.g{background:var(--rg);}
-        .doc-name{flex:1;font-size:12.5px;color:var(--ink-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .doc-name.done{color:var(--rg);font-weight:500;}
-        .doc-due{font-size:11px;color:var(--ink-soft);white-space:nowrap;margin-right:6px;}
-        .doc-due.ov{color:var(--rr);font-weight:600;}
-        .doc-due.dn{color:var(--rg);}
-        .doc-acts{display:flex;align-items:stretch;border-left:1px solid var(--rule);flex-shrink:0;}
-        .doc-btn{width:36px;display:grid;place-items:center;cursor:pointer;color:var(--ink-soft);font-size:14px;transition:all .12s;border:none;background:transparent;border-right:1px solid var(--rule);}
-        .doc-btn:last-child{border-right:none;}
-        .doc-btn:hover{background:var(--cream);}
-        .doc-btn.dl{color:var(--teal);} .doc-btn.dl:hover{background:var(--teal-lt);}
-        .doc-btn.ul{color:var(--claret);} .doc-btn.ul:hover{background:var(--claret-lt);}
-
-        .doc-drawer{background:var(--cream);border:1px solid var(--rule);border-radius:var(--r);margin:-2px 0 5px;overflow:hidden;animation:dIn .15s ease;}
-        @keyframes dIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
-        .dd-body{padding:12px 16px;display:flex;gap:20px;align-items:flex-start;}
-        .dd-meta{flex:1;min-width:0;}
-        .dd-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:3px;margin-top:8px;}
-        .dd-lbl:first-child{margin-top:0;}
-        .dd-val{font-size:12.5px;color:var(--ink-mid);line-height:1.4;}
-        .dd-val strong{color:var(--ink);}
-        .dd-uuid{font-family:var(--fm);font-size:10px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:3px 7px;display:inline-block;word-break:break-all;}
-        .dd-acts{display:flex;flex-direction:column;gap:7px;flex-shrink:0;min-width:100px;}
-
-        /* ── TIMELINE ──────────────────────────────────── */
-        .tl-item{display:flex;gap:10px;margin-bottom:14px;position:relative;}
-        .tl-item::before{content:'';position:absolute;left:13px;top:25px;bottom:-14px;width:1px;background:var(--rule);}
-        .tl-item:last-child::before{display:none;}
-        .tl-dot{width:26px;height:26px;border-radius:50%;background:var(--cream);border:1px solid var(--rule);display:grid;place-items:center;font-size:11px;flex-shrink:0;position:relative;z-index:1;}
-        .tl-dot.d2{background:var(--teal-lt);border-color:rgba(13,118,128,.35);}
-        .tl-dot.bl{background:var(--rr-bg);border-color:rgba(204,0,0,.3);}
-        .tl-body{flex:1;padding-top:3px;}
-        .tl-act{font-size:12.5px;color:var(--ink-mid);margin-bottom:2px;line-height:1.4;}
-        .tl-act strong{color:var(--ink);}
-        .tl-act em{color:var(--claret);font-style:normal;font-weight:500;}
-        .tl-time{font-size:10.5px;color:var(--ink-soft);}
-        .tl-link{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:11.5px;color:var(--teal);cursor:pointer;font-weight:500;}
-        .tl-link:hover{color:var(--claret);}
-
-        /* ── DATA TABLE ────────────────────────────────── */
-        .data-tbl{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;box-shadow:var(--s0);margin-bottom:6px;}
-        .dt-head{display:grid;padding:8px 16px;background:var(--cream);border-bottom:1px solid var(--rule);font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);gap:8px;align-items:center;}
-        .dt-row{display:grid;padding:11px 16px;border-bottom:1px solid var(--rule-lt);font-size:12.5px;color:var(--ink-mid);gap:8px;align-items:center;cursor:pointer;transition:background .1s;}
-        .dt-row:last-child{border-bottom:none;}
-        .dt-row:hover{background:var(--cream);}
-        .cell-s{color:var(--ink);font-weight:600;font-size:13px;}
-        .cell-sub{font-size:11px;color:var(--ink-soft);margin-top:1px;}
-        .mini-bar{height:4px;background:var(--rule-lt);border-radius:2px;overflow:hidden;margin-top:5px;}
-        .mini-fill{height:100%;background:var(--teal);border-radius:2px;}
-
-        /* ── KPI STRIP ─────────────────────────────────── */
-        .kpi-strip{display:flex;gap:10px;margin-bottom:20px;}
-        .kpi{flex:1;background:var(--paper);border:1px solid var(--rule);border-top:3px solid var(--rule);border-radius:var(--r);padding:12px 15px;box-shadow:var(--s0);}
-        .kpi.k-c{border-top-color:var(--claret);}
-        .kpi.k-r{border-top-color:var(--rr);}
-        .kpi.k-a{border-top-color:var(--ra);}
-        .kpi.k-g{border-top-color:var(--rg);}
-        .kpi.k-t{border-top-color:var(--teal);}
-        .kpi-v{font-family:var(--fh);font-size:26px;font-weight:700;line-height:1;margin-bottom:3px;}
-        .kpi-v.vc{color:var(--claret);} .kpi-v.vr{color:var(--rr);} .kpi-v.va{color:var(--ra);} .kpi-v.vg{color:var(--rg);} .kpi-v.vt{color:var(--teal);}
-        .kpi-l{font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
-        .kpi-d{font-size:10.5px;margin-top:4px;color:var(--ink-soft);}
-        .kpi-d.up{color:var(--rg);} .kpi-d.dn{color:var(--rr);}
-
-        /* ── BLOCKER ALERT ─────────────────────────────── */
-        .blocker{background:var(--rr-bg);border:1px solid rgba(204,0,0,.2);border-left:4px solid var(--rr);border-radius:var(--r);padding:12px 15px;margin-bottom:8px;}
-        .bl-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
-        .bl-country{font-size:11px;font-weight:600;color:var(--rr);letter-spacing:.06em;text-transform:uppercase;}
-        .bl-client{font-size:11px;color:var(--ink-soft);}
-        .bl-age{margin-left:auto;font-size:10.5px;color:var(--rr);font-weight:600;}
-        .bl-desc{font-size:12.5px;color:var(--ink-mid);}
-        .bl-acts{margin-top:7px;display:flex;gap:8px;}
-
-        /* ── AI INSIGHT CARD ───────────────────────────── */
-        .ai-card{background:var(--paper);border:1px solid var(--rule);border-top:3px solid var(--teal);border-radius:var(--r);overflow:hidden;box-shadow:var(--s0);margin-bottom:12px;}
-        .ai-card-head{padding:11px 15px 9px;border-bottom:1px solid var(--rule-lt);background:var(--cream);display:flex;align-items:center;gap:9px;}
-        .ai-card-title{font-family:var(--fh);font-size:14px;font-weight:700;flex:1;}
-        .ai-card-note{font-size:11px;color:var(--ink-soft);font-style:italic;}
-        .ai-card-body{padding:12px 15px;}
-        .ai-finding{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule-lt);}
-        .ai-finding:last-child{border-bottom:none;padding-bottom:0;}
-        .ai-fi{font-size:17px;flex-shrink:0;margin-top:1px;}
-        .ai-ft{font-size:12.5px;color:var(--ink-mid);line-height:1.5;}
-        .ai-ft strong{color:var(--ink);}
-        .ai-ft em{color:var(--teal);font-style:normal;font-weight:500;}
-        .ai-impact{display:inline-block;margin-top:5px;background:var(--teal-lt);color:var(--teal);border:1px solid rgba(13,118,128,.2);border-radius:2px;padding:2px 7px;font-size:10.5px;font-weight:600;}
-
-        /* ── STAFF TABLE SPECIFICS ─────────────────────── */
-        .wb-wrap{width:90px;}
-        .wb-trk{height:5px;background:var(--rule-lt);border-radius:3px;overflow:hidden;}
-        .wb-fill{height:100%;border-radius:3px;}
-        .wb-fill.hi{background:var(--rr);} .wb-fill.mid{background:var(--ra);} .wb-fill.lo{background:var(--rg);}
-        .wb-lbl{font-size:10px;color:var(--ink-soft);margin-top:2px;}
-        .stale{display:inline-flex;align-items:center;gap:4px;background:var(--rr-bg);color:var(--rr);border:1px solid rgba(204,0,0,.18);border-radius:2px;padding:2px 6px;font-size:10.5px;font-weight:600;}
-
-        /* ── MAP SCREEN ────────────────────────────────── */
-        #screen-map{position:relative;overflow:hidden;flex:1;}
-        #map{position:absolute;inset:0;z-index:1;width:100%;height:100%;}
-        .leaflet-tile{filter:saturate(.12) brightness(1.07) sepia(.12);}
-        .leaflet-container{background:#EDE8DF;}
-        .leaflet-control-attribution{display:none;}
-        .leaflet-control-zoom a{background:var(--paper)!important;color:var(--ink)!important;border-color:var(--rule)!important;}
-        .map-stats{position:absolute;top:14px;left:14px;z-index:500;display:flex;gap:8px;pointer-events:none;}
-        .ms-card{background:rgba(255,255,255,.94);border:1px solid var(--rule);border-top:3px solid var(--rule);box-shadow:var(--s1);border-radius:var(--r);padding:10px 15px;min-width:88px;}
-        .ms-card.mc{border-top-color:var(--claret);} .ms-card.mr{border-top-color:var(--rr);}
-        .ms-card.ma{border-top-color:var(--ra);} .ms-card.mg{border-top-color:var(--rg);}
-        .ms-v{font-family:var(--fh);font-size:24px;font-weight:700;line-height:1;margin-bottom:2px;}
-        .ms-v.vc{color:var(--claret);} .ms-v.vr{color:var(--rr);} .ms-v.va{color:var(--ra);} .ms-v.vg{color:var(--rg);}
-        .ms-l{font-size:9.5px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);}
-        .map-ai{position:absolute;top:14px;right:14px;z-index:500;width:280px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-top:3px solid var(--teal);box-shadow:var(--s1);border-radius:var(--r);overflow:hidden;}
-        .mai-head{padding:9px 13px 7px;border-bottom:1px solid var(--rule-lt);display:flex;align-items:center;gap:8px;background:rgba(250,247,242,.95);}
-        .mai-title{font-family:var(--fh);font-size:12px;font-weight:700;flex:1;}
-        .mai-insight{padding:8px 13px;border-bottom:1px solid var(--rule-lt);cursor:pointer;transition:background .1s;}
-        .mai-insight:last-child{border-bottom:none;}
-        .mai-insight:hover{background:rgba(250,247,242,.8);}
-        .mai-region{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:2px;}
-        .mai-text{font-size:11.5px;color:var(--ink-mid);line-height:1.4;}
-        .mai-text em{color:var(--claret);font-style:normal;font-weight:600;}
-        .map-hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(255,255,255,.94);border:1px solid var(--rule);box-shadow:var(--s0);border-radius:20px;padding:7px 18px;font-size:11.5px;color:var(--ink-soft);white-space:nowrap;pointer-events:none;}
-        .map-hint strong{color:var(--claret);}
-        .rag-bubble{width:18px;height:18px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.22);cursor:pointer;transition:transform .15s;}
-        .rag-bubble:hover{transform:scale(1.3);}
-        .rag-bubble.r{background:var(--rr);} .rag-bubble.a{background:var(--ra);} .rag-bubble.g{background:var(--rg);}
-        /* Map slide panel */
-        .map-panel{position:absolute;top:0;right:0;bottom:0;width:340px;background:var(--paper);border-left:1px solid var(--rule);box-shadow:var(--s3);z-index:600;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
-        .map-panel.open{transform:translateX(0);}
-        .mp-head{padding:18px 20px 13px;border-bottom:1px solid var(--rule);background:var(--cream);}
-        .mp-top{display:flex;align-items:flex-start;gap:11px;margin-bottom:11px;}
-        .mp-flag{font-size:28px;line-height:1;}
-        .mp-country{font-family:var(--fh);font-size:17px;font-weight:700;margin-bottom:2px;}
-        .mp-meta{font-size:11px;color:var(--ink-soft);}
-        .mp-close{margin-left:auto;width:24px;height:24px;display:grid;place-items:center;cursor:pointer;border-radius:3px;color:var(--ink-soft);font-size:15px;}
-        .mp-close:hover{background:var(--rule-lt);}
-        .mp-prog{display:flex;align-items:center;gap:9px;}
-        .mp-trk{flex:1;height:4px;background:var(--rule-lt);border-radius:2px;overflow:hidden;}
-        .mp-fill{height:100%;background:var(--teal);border-radius:2px;}
-        .mp-pct{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--teal);white-space:nowrap;}
-        .mp-body{flex:1;overflow-y:auto;padding:14px 20px;}
-        .mp-sec{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:12px 0 7px;display:flex;align-items:center;gap:7px;}
-        .mp-sec::after{content:'';flex:1;height:1px;background:var(--rule);}
-        .mp-sec:first-child{margin-top:0;}
-        .mp-doc{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--cream);border:1px solid var(--rule);border-radius:var(--r);margin-bottom:4px;font-size:12px;}
-        .mp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-        .mp-dot.r{background:var(--rr);} .mp-dot.a{background:var(--ra);} .mp-dot.g{background:var(--rg);}
-        .mp-dn{flex:1;color:var(--ink-mid);}
-        .mp-foot{padding:12px 20px;border-top:1px solid var(--rule);display:flex;gap:8px;}
-        /* Leaflet popup overrides */
-        .leaflet-popup-content-wrapper{background:var(--paper)!important;border:1px solid var(--rule)!important;border-radius:var(--r)!important;box-shadow:var(--s3)!important;font-family:var(--fb)!important;}
-        .leaflet-popup-tip{background:var(--paper)!important;}
-        .leaflet-popup-content{margin:13px 15px!important;font-size:13px!important;min-width:170px;}
-        .leaflet-popup-close-button{color:var(--ink-soft)!important;top:8px!important;right:9px!important;}
-        .lp-flag{font-size:22px;margin-bottom:5px;}
-        .lp-name{font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:5px;}
-        .lp-row{font-size:12px;color:var(--ink-soft);margin-bottom:3px;}
-        .lp-r{color:var(--rr);font-weight:600;} .lp-a{color:var(--ra);font-weight:600;} .lp-g{color:var(--rg);font-weight:600;}
-        .lp-btn{display:block;width:100%;margin-top:9px;background:var(--claret);color:#fff;border:none;border-radius:var(--r);padding:7px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;}
-
-        /* ── CASE PHASE BAR ────────────────────────────── */
-        .phase-bar{height:37px;background:var(--cream);border-bottom:1px solid var(--rule);display:flex;align-items:stretch;padding:0 18px;flex-shrink:0;}
-        .phase-tab{display:flex;align-items:center;gap:7px;padding:0 16px;font-size:12.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;margin-bottom:-1px;transition:all .12s;}
-        .phase-tab:hover{color:var(--ink);}
-        .phase-tab.on{color:var(--teal);border-bottom-color:var(--teal);font-weight:600;}
-        .ph-badge{font-size:9.5px;padding:1px 6px;border-radius:3px;font-weight:600;}
-        .phb-r{background:var(--rr-bg);color:var(--rr);}
-        .phb-a{background:var(--ra-bg);color:var(--ra);}
-        .phb-g{background:var(--rg-bg);color:var(--rg);}
-        .phb-t{background:var(--teal-lt);color:var(--teal);}
-        .phase-bar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
-        .pane{display:none;} .pane.on{display:flex;flex:1;overflow:hidden;}
-
-        /* ── CASE LAYOUT ───────────────────────────────── */
-        .case-main{flex:1;overflow-y:auto;padding:22px 26px;}
-        .case-aside{width:268px;flex-shrink:0;border-left:1px solid var(--rule);overflow-y:auto;padding:15px;background:var(--cream);}
-
-        /* ── DAY 2 ─────────────────────────────────────── */
-        .d2-phases{display:flex;gap:8px;margin-bottom:18px;}
-        .d2-card{flex:1;background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:10px 13px;box-shadow:var(--s0);cursor:pointer;transition:border-color .12s;}
-        .d2-card:hover{border-color:var(--teal);}
-        .d2-card.active{border-color:var(--teal);background:var(--teal-lt);}
-        .d2-num{font-family:var(--fh);font-size:20px;font-weight:700;color:var(--teal);line-height:1;margin-bottom:2px;}
-        .d2-lbl{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);}
-        .d2-status{margin-top:5px;font-size:11px;font-weight:600;}
-        .tax-task{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--rule);border-radius:var(--r);margin-bottom:5px;overflow:hidden;box-shadow:var(--s0);}
-        .tax-task.tt-g{border-left-color:var(--rg);background:var(--rg-bg);}
-        .tax-task.tt-a{border-left-color:var(--ra);}
-        .tax-task.tt-upcoming{border-left-color:var(--rule);opacity:.75;}
-        .tt-main{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;}
-        .tt-icon{font-size:16px;flex-shrink:0;}
-        .tt-body{flex:1;min-width:0;}
-        .tt-name{font-size:13px;color:var(--ink-mid);font-weight:500;margin-bottom:2px;}
-        .tt-name.done{color:var(--rg);}
-        .tt-desc{font-size:11px;color:var(--ink-soft);}
-        .tt-right{text-align:right;flex-shrink:0;}
-        .tt-due{font-size:11px;white-space:nowrap;}
-        .tt-due.ov{color:var(--rr);font-weight:600;}
-        .tt-due.ok{color:var(--rg);}
-        .tt-freq{font-size:9.5px;padding:2px 6px;border-radius:2px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;background:var(--cream);color:var(--ink-soft);border:1px solid var(--rule);display:inline-block;margin-top:3px;}
-        .d2-drawer{background:var(--cream);border:1px solid var(--rule);border-radius:var(--r);margin:-2px 0 5px;padding:13px 16px;animation:dIn .15s ease;}
-        .d2-steps{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
-        .d2-step{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ink-mid);}
-        .d2-sn{width:19px;height:19px;border-radius:50%;background:var(--teal-lt);color:var(--teal);font-size:10px;font-weight:700;display:grid;place-items:center;flex-shrink:0;margin-top:1px;}
-
-        /* ── REQ SCREEN ────────────────────────────────── */
-        .rq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-        .rq-card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;box-shadow:var(--s0);}
-        .rq-head{padding:11px 14px;background:var(--cream);border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;}
-        .rq-body{padding:8px 14px;}
-        .rq-step{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--rule-lt);font-size:12.5px;color:var(--ink-soft);}
-        .rq-step:last-child{border-bottom:none;}
-        .rq-sn{width:18px;height:18px;border-radius:50%;background:var(--teal-lt);color:var(--teal);font-size:10px;font-weight:700;display:grid;place-items:center;flex-shrink:0;margin-top:1px;}
-
-        /* ── PROVIDER LAYOUT ───────────────────────────── */
-        #provider-screen{overflow:hidden;}
-        .pv-layout{display:flex;flex:1;overflow:hidden;}
-        .pv-tabs{width:155px;flex-shrink:0;background:var(--cream);border-right:1px solid var(--rule);padding:13px 9px;}
-        .pv-tab{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:var(--r);font-size:12.5px;cursor:pointer;color:var(--ink-mid);margin-bottom:2px;transition:all .1s;}
-        .pv-tab:hover{background:var(--rule-lt);color:var(--ink);}
-        .pv-tab.on{background:var(--paper);color:var(--claret);font-weight:600;box-shadow:var(--s0);}
-        .pv-main{flex:1;overflow-y:auto;padding:22px 26px;}
-        .pv-pane{display:none;} .pv-pane.on{display:block;}
-
-        /* ── MODAL ─────────────────────────────────────── */
-        .modal-bd{position:fixed;inset:0;z-index:1000;background:rgba(51,48,46,.45);backdrop-filter:blur(3px);display:none;place-items:center;}
-        .modal-bd.open{display:grid;}
-        .modal{background:var(--paper);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--s3);animation:mIn .2s ease;overflow:hidden;}
-        @keyframes mIn{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-        .modal.sm{width:480px;} .modal.md{width:540px;}
-        .m-hd{padding:17px 21px 13px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:10px;}
-        .m-title{font-family:var(--fh);font-size:17px;font-weight:700;}
-        .m-sub{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
-        .m-x{margin-left:auto;width:26px;height:26px;display:grid;place-items:center;cursor:pointer;border-radius:3px;color:var(--ink-soft);font-size:15px;}
-        .m-x:hover{background:var(--cream);}
-        .m-body{padding:17px 21px;}
-        .m-foot{padding:12px 21px 17px;border-top:1px solid var(--rule);display:flex;gap:9px;}
-        .f-lbl{display:block;font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px;}
-        .f-sel,.f-in{width:100%;background:var(--cream);border:1px solid var(--rule);border-radius:var(--r);padding:8px 11px;font-family:var(--fb);font-size:13px;color:var(--ink);outline:none;margin-bottom:13px;appearance:none;}
-        .f-sel:focus,.f-in:focus{border-color:var(--teal);}
-        .doc-preview{background:var(--cream);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;margin-bottom:13px;}
-        .dp-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--rule-lt);font-size:12.5px;color:var(--ink-mid);}
-        .dp-item:last-child{border-bottom:none;}
-        .dp-item::before{content:'○';color:var(--ink-soft);font-size:9px;}
-
-        /* ── UPLOAD MODAL ──────────────────────────────── */
-        .upload-zone{border:2px dashed var(--rule);border-radius:var(--r);padding:22px;text-align:center;cursor:pointer;transition:all .15s;background:var(--cream);}
-        .upload-zone:hover,.upload-zone.drag{border-color:var(--teal);background:var(--teal-lt);}
-        .uz-icon{font-size:28px;margin-bottom:8px;}
-        .uz-text{font-size:12.5px;color:var(--ink-soft);}
-        .uz-text strong{color:var(--teal);}
-        .file-chosen{display:none;margin-top:11px;padding:9px 12px;background:var(--rg-bg);border:1px solid rgba(10,102,64,.2);border-radius:var(--r);}
-        .fc-name{font-size:12.5px;color:var(--rg);font-weight:600;}
-        .fc-sub{font-size:11px;color:var(--ink-soft);margin-top:2px;}
-
-        /* ── TOAST ─────────────────────────────────────── */
-        .toast-wrap{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none;}
-        .toast{background:var(--ink);color:#fff;border-radius:var(--r);padding:10px 16px;font-size:12.5px;box-shadow:var(--s3);opacity:0;transform:translateY(8px);transition:all .22s;max-width:300px;line-height:1.4;}
-        .toast.show{opacity:1;transform:translateY(0);}
-        .toast.teal{background:var(--teal);}
-        .toast.claret{background:var(--claret);}
-        /* ── ALERT PANEL ───────────────────────────────── */
-        .alert-row{display:flex;align-items:flex-start;gap:10px;padding:8px 16px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--rule-lt);}
-        .alert-row:last-child{border-bottom:none;}
-        .alert-row:hover{background:var(--cream);}
-        .alert-r{border-left:3px solid var(--rr);}
-        .alert-t{border-left:3px solid var(--teal);}
-        .alert-flag{font-size:16px;flex-shrink:0;margin-top:1px;}
-        .alert-body{flex:1;min-width:0;}
-        .alert-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px;}
-        .alert-desc{font-size:11px;color:var(--ink-soft);line-height:1.4;}
-        .alert-age{font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-top:2px;}
-
-        /* ── WELCOME MODAL ─────────────────────────────── */
-        .wm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
-        .wm-card{background:var(--cream);border:1px solid var(--rule);border-radius:var(--r);padding:11px 14px;cursor:pointer;transition:border-color .12s;}
-        .wm-card:hover{border-color:var(--teal);}
-        .wm-card-flag{font-size:22px;margin-bottom:5px;}
-        .wm-card-title{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:2px;}
-        .wm-card-sub{font-size:11px;color:var(--ink-soft);line-height:1.4;}
-        .wm-cap-list{margin-top:13px;padding:11px 14px;background:var(--cream);border:1px solid var(--rule);border-radius:var(--r);}
-        .wm-cap-item{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--ink-mid);border-bottom:1px solid var(--rule-lt);}
-        .wm-cap-item:last-child{border-bottom:none;}
-        .wm-cap-icon{font-size:13px;flex-shrink:0;}
     </style>
+
 </head>
-<body>
-<input type="file" id="fileInput" style="display:none" accept=".pdf,.doc,.docx,.jpg,.png" onchange="handleFileChosen(event)">
+<script type="text/javascript">
+    // Little Canvas things
+var canvas = document.querySelector("#canvas"),
+    ctx = canvas.getContext('2d');
 
-<!-- ════════════════════════════════════════════════
-     MASTHEAD
-════════════════════════════════════════════════ -->
-<nav class="mast">
-    <a class="mast-brand" href="https://synkrisis.co" target="_blank">
-        <div class="mast-icon">
-            <svg viewBox="0 0 16 16" fill="none"><path d="M12 4C12 2.9 11.1 2 10 2H6C4.9 2 4 2.9 4 4C4 5.1 4.9 6 6 6H10C11.1 6 12 6.9 12 8C12 9.1 11.1 10 10 10H6C4.9 10 4 10.9 4 12" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <div class="mast-words"><span class="mast-name">Synkrisis</span><span class="mast-sub">synkrisis.co</span></div>
-    </a>
-    <div class="mast-nav">
-        <div class="mnav-tab on" id="tab-map" onclick="showScreen('map')">🌍 Global Map</div>
-        <div class="mnav-tab" id="tab-case" onclick="showScreen('case')">📁 Case Detail</div>
-        <div class="mnav-tab" id="tab-req" onclick="showScreen('req')">📋 Requirements</div>
-        <div class="mnav-tab" id="tab-provider" onclick="showScreen('provider')">🏢 Provider</div>
-    </div>
-    <div class="mast-right">
-        <div class="role-sw" id="roleSw">
-            <button class="role-btn on" onclick="setRole('client',this)">Client</button>
-            <button class="role-btn" onclick="setRole('provider',this)">Provider</button>
-        </div>
-        <!-- ALERTS BELL -->
-        <div class="mbell" id="alertBell" onclick="toggleAlerts(event)" style="cursor:pointer;position:relative">
-            🔔<div class="mbell-pip"></div>
-        </div>
-        <!-- ALERTS PANEL -->
-        <div id="alertPanel" style="display:none;position:fixed;top:54px;right:14px;width:340px;background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--s3);z-index:900;overflow:hidden;">
-            <div style="padding:11px 16px 9px;background:var(--cream);border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px;">
-                <span style="font-family:var(--fh);font-size:14px;font-weight:700;flex:1">Alerts &amp; Insights</span>
-                <span class="mbell-pip" style="position:static;width:6px;height:6px;border-radius:50%;background:var(--rr)"></span>
-                <span style="font-size:11px;color:var(--ink-soft)">3 require action</span>
-            </div>
-            <!-- Blockers -->
-            <div style="padding:9px 0 3px;border-bottom:1px solid var(--rule)">
-                <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--rr);padding:0 16px 5px">Blockers</div>
-                <div class="alert-row alert-r" onclick="loadCase('arm');closeAlerts()"><span class="alert-flag">🇦🇲</span><div class="alert-body"><div class="alert-title">Armenia · Acme Corp</div><div class="alert-desc">Certificate of Incorporation overdue 8 days — case blocked</div></div><div class="alert-age" style="color:var(--rr)">8d</div></div>
-                <div class="alert-row alert-r" onclick="loadCase('deu2');closeAlerts()"><span class="alert-flag">🇩🇪</span><div class="alert-body"><div class="alert-title">Germany · Northfield Capital</div><div class="alert-desc">Notarial deed not scheduled — all downstream tasks blocked</div></div><div class="alert-age" style="color:var(--rr)">5d</div></div>
-                <div class="alert-row alert-r" onclick="loadCase('sgp2');closeAlerts()"><span class="alert-flag">🇸🇬</span><div class="alert-body"><div class="alert-title">Singapore · Northfield Capital</div><div class="alert-desc">Corppass admin not activated — MOM, IRAS, ACRA blocked</div></div><div class="alert-age" style="color:var(--rr)">3d</div></div>
-            </div>
-            <!-- AI suggestions -->
-            <div style="padding:9px 0 6px">
-                <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);padding:0 16px 5px">AI Suggestions</div>
-                <div class="alert-row alert-t" onclick="showScreen('provider');pvSwitch(document.querySelector('.pv-tab:last-child'),'insights');closeAlerts()"><span class="alert-flag">✦</span><div class="alert-body"><div class="alert-title">Brian Ohanyan at 92% capacity</div><div class="alert-desc">Reassign 3 tasks to David Tan — est. 38% faster completion</div></div></div>
-                <div class="alert-row alert-t"><span class="alert-flag">⏱</span><div class="alert-body"><div class="alert-title">Client document delays averaging 6.8 days</div><div class="alert-desc">Automated reminders at day 2 &amp; 4 could reduce to 3.9 days</div></div></div>
-                <div class="alert-row alert-t"><span class="alert-flag">🇩🇪</span><div class="alert-body"><div class="alert-title">German notarial slots — pre-book now</div><div class="alert-desc">3-week advance booking reduces wait by 40% on average</div></div></div>
-            </div>
-        </div>
-        <div class="mav" id="mastAv">JD</div>
-    </div>
-</nav>
+// Set Canvas to be window size
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-<!-- ════════════════════════════════════════════════
-     SUB-BAR
-════════════════════════════════════════════════ -->
-<div class="subbar" id="subbar">
-    <div class="sb-pill on" onclick="filterSB(this,'all')">All Cases</div>
-    <div class="sb-pill" onclick="filterSB(this,'blocked')">⛔ Blocked (3)</div>
-    <div class="sb-pill" onclick="filterSB(this,'progress')">● In Progress (5)</div>
-    <div class="sb-pill" onclick="filterSB(this,'ontrack')">● On Track (3)</div>
-    <div class="sb-sep"></div>
-    <div class="sb-pill" onclick="filterSB(this,'apac')">APAC</div>
-    <div class="sb-pill" onclick="filterSB(this,'emea')">EMEA</div>
-    <div class="sb-pill" onclick="filterSB(this,'latam')">LATAM</div>
-    <div class="subbar-right">
-        <button class="btn-cta" onclick="openNewCaseModal()">+ Add Location</button>
-    </div>
-</div>
+// Configuration, Play with these
+var config = {
+  particleNumber: 800,
+  maxParticleSize: 10,
+  maxSpeed: 40,
+  colorVariation: 50
+};
 
-<!-- ════════════════════════════════════════════════
-     LAYOUT
-════════════════════════════════════════════════ -->
-<div class="layout">
+// Colors
+var colorPalette = {
+    bg: {r:12,g:9,b:29},
+    matter: [
+      {r:36,g:18,b:42}, // darkPRPL
+      {r:78,g:36,b:42}, // rockDust
+      {r:252,g:178,b:96}, // solorFlare
+      {r:253,g:238,b:152} // totesASun
+    ]
+};
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sb-sec">
-            <div class="sb-lbl">Active Cases</div>
-            <div id="sb-cases"></div>
-        </div>
-        <div class="sb-hr"></div>
-        <div class="sb-sec">
-            <div class="sb-lbl">Navigate</div>
-            <div class="sb-item" onclick="showScreen('map')"><span class="sb-flag">🗺</span> World Map</div>
-            <div class="sb-item" onclick="showScreen('req')"><span class="sb-flag">📋</span> Country Guides</div>
-            <div class="sb-item" onclick="showScreen('provider')"><span class="sb-flag">🏢</span> Provider View</div>
-            <div class="sb-item"><span class="sb-flag">⚙</span> Settings</div>
-        </div>
-        <div class="sb-hr"></div>
-        <div class="rag-key">
-            <div class="rk-title">Status key</div>
-            <div class="rk-row"><div class="pip r"></div>Blocked — action required</div>
-            <div class="rk-row"><div class="pip a"></div>In progress — under review</div>
-            <div class="rk-row"><div class="pip g"></div>On track — no issues</div>
-        </div>
-    </aside>
+// Some Variables hanging out
+var particles = [],
+    centerX = canvas.width / 2,
+    centerY = canvas.height / 2,
+    drawBg,
 
-    <!-- MAIN -->
-    <main class="main">
+// Draws the background for the canvas, because space
+drawBg = function (ctx, color) {
+    ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+};
 
-        <!-- ════ SCREEN: MAP ════ -->
-        <div id="screen-map" class="screen on">
-            <div id="map"></div>
-            <div class="map-stats">
-                <div class="ms-card mc"><div class="ms-v vc" id="stat-total">—</div><div class="ms-l">Active Cases</div></div>
-                <div class="ms-card mr"><div class="ms-v vr" id="stat-blocked">—</div><div class="ms-l">Blocked</div></div>
-                <div class="ms-card ma"><div class="ms-v va" id="stat-progress">—</div><div class="ms-l">In Progress</div></div>
-                <div class="ms-card mg"><div class="ms-v vg" id="stat-ontrack">—</div><div class="ms-l">On Track</div></div>
-            </div>
-            <div class="map-ai">
-                <div class="mai-head"><span class="ai-badge">AI</span><span class="mai-title">Regional Intelligence</span><span style="font-size:9px;color:var(--ink-soft);font-style:italic">indicative</span></div>
-                <div class="mai-insight"><div class="mai-region">APAC</div><div class="mai-text">For APAC entry, <em>Australia</em> offers fastest incorporation (2–4 wks). <em>Singapore</em> is lowest-cost with same-day registration and no minimum capital.</div></div>
-                <div class="mai-insight"><div class="mai-region">EMEA</div><div class="mai-text"><em>UK</em> is simplest EU-adjacent entry. For full EU access, <em>Netherlands</em> has lower notarial costs than Germany with equivalent standing.</div></div>
-                <div class="mai-insight"><div class="mai-region">LATAM</div><div class="mai-text"><em>Mexico</em> formation time down <em>32%</em> since 2023 digital reforms. Brazil complex but essential for Mercosur market access.</div></div>
-            </div>
-            <div class="map-hint"><strong>Green regions</strong> available · Click marker to view case · Click region to add new location</div>
-            <div class="map-panel" id="mapPanel">
-                <div class="mp-head">
-                    <div class="mp-top">
-                        <div class="mp-flag" id="mp-flag">🇦🇲</div>
-                        <div><div class="mp-country" id="mp-country">Armenia</div><div class="mp-meta" id="mp-meta">LLC · Feb 2025</div></div>
-                        <div class="mp-close" onclick="closeMapPanel()">✕</div>
-                    </div>
-                    <div class="mp-prog"><span style="font-size:11px;color:var(--ink-soft);white-space:nowrap">Progress</span>
-                        <div class="mp-trk"><div class="mp-fill" id="mp-fill" style="width:35%"></div></div>
-                        <span class="mp-pct" id="mp-pct">35%</span>
-                    </div>
-                </div>
-                <div class="mp-body" id="mp-body"></div>
-                <div class="mp-foot">
-                    <button class="btn-p" style="flex:1" id="mp-open-btn">Open Full Case →</button>
-                    <button class="btn-s" onclick="toast('Exporting case summary…','teal')">Export</button>
-                </div>
-            </div>
-        </div>
+// Particle Constructor
+var Particle = function (x, y) {
+    // X Coordinate
+    this.x = x || Math.round(Math.random() * canvas.width);
+    // Y Coordinate
+    this.y = y || Math.round(Math.random() * canvas.height);
+    // Radius of the space dust
+    this.r = Math.ceil(Math.random() * config.maxParticleSize);
+    // Color of the rock, given some randomness
+    this.c = colorVariation(colorPalette.matter[Math.floor(Math.random() * colorPalette.matter.length)],true );
+    // Speed of which the rock travels
+    this.s = Math.pow(Math.ceil(Math.random() * config.maxSpeed), .7);
+    // Direction the Rock flies
+    this.d = Math.round(Math.random() * 360);
+};
 
-        <!-- ════ SCREEN: CASE DETAIL ════ -->
-        <div id="screen-case" class="screen" style="flex-direction:column;">
-            <div class="phase-bar">
-                <div class="phase-tab on" id="ptab-formation" onclick="switchPhase('formation',this)">Formation <span class="ph-badge phb-r" id="pbadge-formation">Blocked</span></div>
-                <div class="phase-tab" id="ptab-day2" onclick="switchPhase('day2',this)">Day 2 — Tax &amp; Compliance <span class="ph-badge phb-a" id="pbadge-day2">3 Due</span></div>
-                <div class="phase-tab" id="ptab-history" onclick="switchPhase('history',this)">Full History <span class="ph-badge phb-t" id="pbadge-history">24 Events</span></div>
-                <div class="phase-bar-right">
-                    <button class="btn-s sm" onclick="openUploadModal('Document')">📤 Upload</button>
-                    <button class="btn-cta" onclick="toast('New task added','teal')">+ Add Task</button>
-                </div>
-            </div>
-            <div id="pane-formation" class="pane on"></div>
-            <div id="pane-day2" class="pane"></div>
-            <div id="pane-history" class="pane"></div>
-        </div>
-
-        <!-- ════ SCREEN: REQUIREMENTS ════ -->
-        <div id="screen-req" class="screen" style="flex-direction:column;">
-            <div style="flex-shrink:0;padding:20px 26px 0;">
-                <div class="page-head">
-                    <div><div class="ph-h1">Country Requirements</div><div class="ph-sub">Regulatory guide by jurisdiction</div></div>
-                    <select id="rq-country" class="f-sel" style="width:200px;margin:0;background:var(--paper)" onchange="renderReqs(this.value)">
-                        <option value="am">🇦🇲 Armenia</option><option value="au">🇦🇺 Australia</option>
-                        <option value="de">🇩🇪 Germany</option><option value="sg">🇸🇬 Singapore</option>
-                        <option value="gb">🇬🇧 United Kingdom</option><option value="ae">🇦🇪 UAE</option>
-                    </select>
-                    <span class="s-pill sp-teal" id="rq-time">6–10 weeks</span>
-                    <button class="btn-cta" onclick="openNewCaseModal()">+ Start Case</button>
-                </div>
-            </div>
-            <div style="overflow-y:auto;flex:1;padding:0 26px 24px;"><div class="rq-grid" id="rq-grid"></div></div>
-        </div>
-
-        <!-- ════ SCREEN: PROVIDER ════ -->
-        <div id="screen-provider" class="screen">
-            <div class="pv-layout">
-                <div class="pv-tabs">
-                    <div class="pv-tab on" onclick="pvSwitch(this,'overview')"><span>📊</span> Overview</div>
-                    <div class="pv-tab" onclick="pvSwitch(this,'clients')"><span>🏦</span> By Client</div>
-                    <div class="pv-tab" onclick="pvSwitch(this,'staff')"><span>👤</span> By Staff</div>
-                    <div class="pv-tab" onclick="pvSwitch(this,'insights')"><span>✦</span> AI Insights</div>
-                </div>
-                <div class="pv-main">
-                    <div id="pv-overview" class="pv-pane on"></div>
-                    <div id="pv-clients" class="pv-pane"></div>
-                    <div id="pv-staff" class="pv-pane"></div>
-                    <div id="pv-insights" class="pv-pane"></div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-</div><!-- /layout -->
-
-<!-- ════════════ MODALS ════════════ -->
-<!-- NEW CASE MODAL -->
-<div class="modal-bd" id="newCaseModal" onclick="if(event.target===this)closeModal('newCaseModal')">
-    <div class="modal md">
-        <div class="m-hd">
-            <div class="mp-flag" id="nc-flag" style="font-size:28px">🌍</div>
-            <div><div class="m-title" id="nc-title">New Case</div><div class="m-sub">Select entity type to generate required document tasks</div></div>
-            <div class="m-x" onclick="closeModal('newCaseModal')">✕</div>
-        </div>
-        <div class="m-body">
-            <label class="f-lbl">Jurisdiction</label>
-            <select class="f-sel" id="nc-juris" onchange="updateNCFlag()">
-                <option value="au">🇦🇺 Australia</option><option value="de">🇩🇪 Germany</option>
-                <option value="sg">🇸🇬 Singapore</option><option value="gb">🇬🇧 United Kingdom</option>
-                <option value="ae">🇦🇪 UAE</option><option value="br">🇧🇷 Brazil</option>
-                <option value="am">🇦🇲 Armenia</option><option value="nl">🇳🇱 Netherlands</option>
-                <option value="mx">🇲🇽 Mexico</option><option value="in">🇮🇳 India</option>
-            </select>
-            <label class="f-lbl">Entity Type</label>
-            <select class="f-sel" id="nc-entity" onchange="refreshNCDocs()">
-                <option value="sub">Wholly-owned Subsidiary</option>
-                <option value="branch">Branch Office</option>
-                <option value="rep">Representative Office</option>
-                <option value="jv">Joint Venture</option>
-            </select>
-            <label class="f-lbl">Assigned Case Manager</label>
-            <select class="f-sel">
-                <option>Sarah Kim — APAC Lead</option><option>Lena Pfeiffer — EMEA</option>
-                <option>David Tan — APAC Associate</option><option>Marcus Reyes — LATAM</option>
-            </select>
-            <label class="f-lbl">Document tasks to be created</label>
-            <div class="doc-preview" id="nc-docs"></div>
-        </div>
-        <div class="m-foot">
-            <button class="btn-p teal" onclick="closeModal('newCaseModal');toast('✓ Case created — 6 tasks generated','teal');showScreen('case')">Create Case &amp; Generate Tasks →</button>
-            <button class="btn-s" onclick="closeModal('newCaseModal')">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<!-- UPLOAD MODAL -->
-<div class="modal-bd" id="uploadModal" onclick="if(event.target===this)closeModal('uploadModal')">
-    <div class="modal sm">
-        <div class="m-hd">
-            <div><div class="m-title">Upload Document</div><div class="m-sub" id="upload-doc-name">Select a file to upload</div></div>
-            <div class="m-x" onclick="closeModal('uploadModal')">✕</div>
-        </div>
-        <div class="m-body">
-            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
-                 ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
-                 ondrop="event.preventDefault();this.classList.remove('drag');handleFileDrop(event)">
-                <div class="uz-icon">📂</div>
-                <div class="uz-text"><strong>Click to browse</strong> or drag and drop</div>
-                <div style="font-size:11px;color:var(--ink-soft);margin-top:5px">PDF, DOC, DOCX, JPG, PNG — max 25 MB</div>
-            </div>
-            <div class="file-chosen" id="fileChosen">
-                <div class="fc-name" id="fc-name"></div>
-                <div class="fc-sub">Ready to submit — awaiting confirmation</div>
-            </div>
-            <div style="margin-top:13px">
-                <label class="f-lbl">Notes (optional)</label>
-                <input class="f-in" style="margin-bottom:0" type="text" placeholder="Add a note for the case manager…">
-            </div>
-        </div>
-        <div class="m-foot">
-            <button class="btn-p teal" onclick="submitUpload()">Submit Document</button>
-            <button class="btn-s" onclick="closeModal('uploadModal')">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<!-- TOAST CONTAINER -->
-<div class="toast-wrap" id="toastWrap"></div>
-
-<!-- WELCOME / POC MODAL -->
-<div class="modal-bd open" id="welcomeModal" onclick="if(event.target===this)closeWelcome()">
-    <div class="modal" style="width:560px;max-height:90vh;overflow-y:auto;">
-        <div class="m-hd" style="background:var(--ink);border-bottom:none;padding:20px 24px 16px;">
-            <div style="display:flex;align-items:center;gap:11px;">
-                <div style="width:34px;height:34px;background:var(--claret);border-radius:4px;display:grid;place-items:center;flex-shrink:0;">
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M12 4C12 2.9 11.1 2 10 2H6C4.9 2 4 2.9 4 4C4 5.1 4.9 6 6 6H10C11.1 6 12 6.9 12 8C12 9.1 11.1 10 10 10H6C4.9 10 4 10.9 4 12" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
-                </div>
-                <div>
-                    <div style="font-family:var(--fh);font-size:19px;font-weight:700;color:#fff;">Synkrisis</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.12em;text-transform:uppercase;">Proof of Concept · Synthetic Data Only</div>
-                </div>
-                <div style="margin-left:auto;background:var(--claret);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:3px;">PoC</div>
-            </div>
-        </div>
-        <div class="m-body" style="padding:20px 24px 6px;">
-            <p style="font-size:13px;color:var(--ink-mid);line-height:1.6;margin-bottom:4px;">This is an early prototype of the Synkrisis compliance platform. All data is <strong>synthetic</strong> — client names, case details, and documents are illustrative only.</p>
-            <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-bottom:14px;">Use the toggle in the top bar to switch between <strong>Client</strong> and <strong>Provider</strong> perspectives. Feel free to click through — nothing is persisted and there are no live connections.</p>
-
-            <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;display:flex;align-items:center;gap:8px;">Suggested journeys <div style="flex:1;height:1px;background:var(--rule)"></div></div>
-            <div class="wm-grid">
-                <div class="wm-card" onclick="closeWelcome();loadCase('arm')">
-                    <div class="wm-card-flag">🇦🇲</div>
-                    <div class="wm-card-title">Armenia — Blocked Case</div>
-                    <div class="wm-card-sub">See a live blocker, document upload flow, and Day 2 tax obligations for an LLC formation</div>
-                </div>
-                <div class="wm-card" onclick="closeWelcome();loadCase('sgp')">
-                    <div class="wm-card-flag">🇸🇬</div>
-                    <div class="wm-card-title">Singapore — Complete Case</div>
-                    <div class="wm-card-sub">Browse a fully completed formation with all documents downloadable and audit trail intact</div>
-                </div>
-                <div class="wm-card" onclick="closeWelcome();showScreen('map')">
-                    <div class="wm-card-flag">🌍</div>
-                    <div class="wm-card-title">Global Map</div>
-                    <div class="wm-card-sub">Click active country markers to open cases, or available regions to simulate adding a new location</div>
-                </div>
-                <div class="wm-card" onclick="closeWelcome();setRole('provider',document.querySelectorAll('.role-btn')[1]);showScreen('provider')">
-                    <div class="wm-card-flag">🏢</div>
-                    <div class="wm-card-title">Provider Dashboard</div>
-                    <div class="wm-card-sub">Staff KPIs, all-client overview, blocker management and AI process improvement insights</div>
-                </div>
-            </div>
-
-            <div class="wm-cap-list">
-                <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:7px;">What this prototype covers</div>
-                <div class="wm-cap-item"><span class="wm-cap-icon">📁</span>Formation case management with per-document status tracking</div>
-                <div class="wm-cap-item"><span class="wm-cap-icon">📤</span>Document upload and download with chain-of-custody references</div>
-                <div class="wm-cap-item"><span class="wm-cap-icon">📅</span>Day 2 tax &amp; compliance obligations by jurisdiction</div>
-                <div class="wm-cap-item"><span class="wm-cap-icon">🌍</span>GeoJSON world map with live case RAG status choropleth</div>
-                <div class="wm-cap-item"><span class="wm-cap-icon">🏢</span>Provider view — staff workload, blockers, AI insights (indicative)</div>
-                <div class="wm-cap-item"><span class="wm-cap-icon">📋</span>Country requirements guide across 6 jurisdictions</div>
-            </div>
-        </div>
-        <div class="m-foot" style="padding:14px 24px 20px;">
-            <button class="btn-p" style="flex:1" onclick="closeWelcome();loadCase('arm')">Start exploring → Armenia case</button>
-            <button class="btn-s" onclick="closeWelcome();showScreen('map')">Open world map</button>
-        </div>
-    </div>
-</div>
-</body>
-</html>
-<script>
-    /* ═══════════════════════════════════════════════════════
-       DATA LAYER — all application state lives here
-    ═══════════════════════════════════════════════════════ */
-    const CLIENTS = [
-        { id:'acme',       name:'Acme Corp',          sector:'Technology',    country:'US', avatar:'AC' },
-        { id:'northfield', name:'Northfield Capital', sector:'Fund Mgmt',     country:'US', avatar:'NC' },
-        { id:'meridian',   name:'Meridian Partners',  sector:'Finance',       country:'US', avatar:'MP' },
-        { id:'vantage',    name:'Vantage Global',     sector:'Logistics',     country:'US', avatar:'VG' },
-    ];
-
-    const STAFF = [
-        { id:'sk', name:'Sarah Kim',        role:'Case Manager', region:'APAC',    av:'SK', avBg:'#EAF4F5', avFg:'#0D7680', open:6,  stale:0,  workload:65, avgDays:2.1, rag:'g' },
-        { id:'am', name:'Arman Mkrtchyan', role:'In-country',   region:'Armenia', av:'AM', avBg:'#F0EDF8', avFg:'#5A4FCF', open:4,  stale:2,  workload:78, avgDays:5.3, rag:'a' },
-        { id:'br', name:'Brian Ohanyan',   role:'In-country',   region:'Armenia', av:'BR', avBg:'#FCE8EE', avFg:'#990F3D', open:9,  stale:5,  workload:92, avgDays:8.4, rag:'r' },
-        { id:'lp', name:'Lena Pfeiffer',   role:'In-country',   region:'Germany', av:'LP', avBg:'#FEF3E2', avFg:'#8A5A0A', open:7,  stale:1,  workload:82, avgDays:4.7, rag:'a' },
-        { id:'dt', name:'David Tan',       role:'Associate',    region:'APAC',    av:'DT', avBg:'#EAF4F5', avFg:'#0D7680', open:5,  stale:0,  workload:55, avgDays:1.9, rag:'g' },
-        { id:'mr', name:'Marcus Reyes',    role:'In-country',   region:'LATAM',   av:'MR', avBg:'#F0F9F4', avFg:'#0A6640', open:3,  stale:0,  workload:40, avgDays:2.8, rag:'g' },
-        { id:'jc', name:'Ji-Young Choi',   role:'Associate',    region:'APAC',    av:'JC', avBg:'#FFF8F0', avFg:'#B35C00', open:6,  stale:1,  workload:70, avgDays:3.2, rag:'a' },
-    ];
-
-    const CASES = [
-        { id:'arm', clientId:'acme',       flag:'🇦🇲', country:'Armenia',   isoA3:'ARM', type:'LLC (ՍՊԸ)',  rag:'r', pct:35,  meta:'LLC Formation · Feb 2025',    manager:'sk', incountry:'am', lat:40.18, lng:44.51 },
-        { id:'deu', clientId:'acme',       flag:'🇩🇪', country:'Germany',   isoA3:'DEU', type:'GmbH',        rag:'a', pct:62,  meta:'GmbH Formation · Jan 2025',   manager:'sk', incountry:'lp', lat:51.16, lng:10.45 },
-        { id:'sgp', clientId:'acme',       flag:'🇸🇬', country:'Singapore', isoA3:'SGP', type:'Pte Ltd',     rag:'g', pct:100, meta:'Pte Ltd · Dec 2024',          manager:'dt', incountry:'dt', lat:1.35,  lng:103.82 },
-        { id:'bra', clientId:'acme',       flag:'🇧🇷', country:'Brazil',    isoA3:'BRA', type:'Ltda',        rag:'a', pct:44,  meta:'Ltda Formation · Mar 2025',   manager:'mr', incountry:'mr', lat:-14.2, lng:-51.9 },
-        { id:'gbr', clientId:'meridian',   flag:'🇬🇧', country:'UK',        isoA3:'GBR', type:'Ltd',         rag:'g', pct:86,  meta:'Ltd Formation · Nov 2024',    manager:'lp', incountry:'lp', lat:51.5,  lng:-0.12 },
-        { id:'are', clientId:'meridian',   flag:'🇦🇪', country:'UAE',       isoA3:'ARE', type:'Free Zone LLC',rag:'a', pct:44,  meta:'Free Zone · Feb 2025',        manager:'jc', incountry:'jc', lat:25.2,  lng:55.27 },
-        { id:'deu2',clientId:'northfield', flag:'🇩🇪', country:'Germany',   isoA3:'DEU', type:'GmbH',        rag:'r', pct:12,  meta:'GmbH Formation · Mar 2025',   manager:'lp', incountry:'lp', lat:48.14, lng:11.58 },
-        { id:'sgp2',clientId:'northfield', flag:'🇸🇬', country:'Singapore', isoA3:'SGP', type:'Pte Ltd',     rag:'r', pct:43,  meta:'Pte Ltd · Feb 2025',          manager:'dt', incountry:'dt', lat:1.29,  lng:103.85 },
-        { id:'are2',clientId:'northfield', flag:'🇦🇪', country:'UAE',       isoA3:'ARE', type:'Mainland LLC', rag:'a', pct:56,  meta:'Mainland LLC · Jan 2025',    manager:'jc', incountry:'jc', lat:24.47, lng:54.37 },
-        { id:'aus', clientId:'vantage',    flag:'🇦🇺', country:'Australia', isoA3:'AUS', type:'Pty Ltd',      rag:'g', pct:91,  meta:'Pty Ltd · Oct 2024',          manager:'sk', incountry:'sk', lat:-25.3, lng:133.8 },
-        { id:'sgp3',clientId:'vantage',    flag:'🇸🇬', country:'Singapore', isoA3:'SGP', type:'Pte Ltd',      rag:'g', pct:95,  meta:'Pte Ltd · Nov 2024',          manager:'dt', incountry:'dt', lat:1.32,  lng:103.80 },
-    ];
-
-    // Documents per case (key = case.id)
-    const DOCS = {
-        arm: [
-            { id:'arm-d1', name:'Certificate of Incorporation (US parent)', rag:'r', owner:'client', due:'Overdue 8 days', dueClass:'ov', complete:false, instructions:'Apostilled. Secretary of State certified copy + notarised Armenian translation.', assignee:'Jane Davies' },
-            { id:'arm-d2', name:'Apostille — Articles of Association', rag:'a', owner:'client', due:'Due Mar 20', complete:false, instructions:'Hague Apostille. Scanned PDF accepted; original by post.', assignee:'Jane Davies' },
-            { id:'arm-d3', name:'Director Passport Copies (notarised)', rag:'g', owner:'client', due:'Uploaded Mar 3', dueClass:'dn', complete:true, uploadedBy:'Jane Davies', uploadedOn:'Mar 3, 10:32' },
-            { id:'arm-d4', name:'Draft Charter (Կannonadrutyun)', rag:'g', owner:'provider', due:'Complete Feb 28', dueClass:'dn', complete:true, uploadedBy:'Arman Mkrtchyan', uploadedOn:'Feb 28, 15:14', note:'Pending client review of director names and share split.' },
-            { id:'arm-d5', name:'State Registration Application — Form P', rag:'a', owner:'provider', due:'In Preparation', complete:false, instructions:'Blocked — requires Certificate of Incorporation first.', assignee:'Arman Mkrtchyan' },
-            { id:'arm-d6', name:'Tax Registration — SRC Armenia', rag:'a', owner:'provider', due:'Awaiting client docs', complete:false, instructions:'Cannot proceed until state registration complete. Output: TIN (ՀVHH).', assignee:'Arman Mkrtchyan' },
-            { id:'arm-d7', name:'Bank Account Opening — Ameriabank', rag:'g', owner:'provider', due:'Complete Mar 1', dueClass:'dn', complete:true, uploadedBy:'Arman Mkrtchyan', uploadedOn:'Mar 1, 11:45' },
-            { id:'arm-d8', name:'Company Seal — Order Confirmation', rag:'g', owner:'provider', due:'Complete Feb 26', dueClass:'dn', complete:true, uploadedBy:'Arman Mkrtchyan', uploadedOn:'Feb 26, 16:30' },
-        ],
-        deu: [
-            { id:'deu-d1', name:'Shareholders List & KYC Pack', rag:'g', owner:'client', due:'Received', dueClass:'dn', complete:true, uploadedBy:'Acme Corp Legal', uploadedOn:'Jan 15' },
-            { id:'deu-d2', name:'Notarial Deed of Formation (GmbH-Vertrag)', rag:'g', owner:'provider', due:'Notarised Feb 2', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Feb 2' },
-            { id:'deu-d3', name:'Commercial Register Filing (Handelsregister)', rag:'a', owner:'provider', due:'Filing — 2–4 wks', complete:false, instructions:'Submitted to local AG. Awaiting HRB number assignment.', assignee:'Lena Pfeiffer' },
-            { id:'deu-d4', name:'Bundesanzeiger Publication', rag:'a', owner:'provider', due:'After HRB receipt', complete:false, instructions:'Required after Handelsregister confirmation.', assignee:'Lena Pfeiffer' },
-            { id:'deu-d5', name:'Tax Registration — Finanzamt (Fragebogen)', rag:'a', owner:'provider', due:'In Preparation', complete:false, instructions:'Submit questionnaire, obtain Steuernummer + USt-IdNr.', assignee:'Lena Pfeiffer' },
-            { id:'deu-d6', name:'EUR Bank Account — Deutsche Bank', rag:'g', owner:'provider', due:'Opened Feb 10', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Feb 10' },
-            { id:'deu-d7', name:'Registered Address Certificate', rag:'g', owner:'provider', due:'Confirmed', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Jan 20' },
-            { id:'deu-d8', name:'ELSTER Portal Registration', rag:'a', owner:'provider', due:'Pending Steuernummer', complete:false, instructions:'Can only register once Steuernummer received from Finanzamt.', assignee:'Lena Pfeiffer' },
-        ],
-        sgp: [
-            { id:'sgp-d1', name:'ACRA Incorporation Certificate', rag:'g', owner:'provider', due:'Complete Dec 2', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Dec 2' },
-            { id:'sgp-d2', name:'Corppass Setup & Admin Activation', rag:'g', owner:'client', due:'Complete Dec 5', dueClass:'dn', complete:true, uploadedBy:'Acme Corp IT', uploadedOn:'Dec 5' },
-            { id:'sgp-d3', name:'Employment Pass — In-Principle Approval', rag:'g', owner:'provider', due:'Complete Dec 12', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Dec 12' },
-            { id:'sgp-d4', name:'IRAS Corporate Tax Registration', rag:'g', owner:'provider', due:'Complete Dec 8', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Dec 8' },
-            { id:'sgp-d5', name:'MAS Notification (if financial services)', rag:'g', owner:'client', due:'N/A — waived', dueClass:'dn', complete:true, uploadedBy:'Sarah Kim', uploadedOn:'Dec 3' },
-            { id:'sgp-d6', name:'Corporate Bank Account — DBS', rag:'g', owner:'provider', due:'Complete Dec 15', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Dec 15' },
-            { id:'sgp-d7', name:'Business Profile Extract (ACRA BizFile+)', rag:'g', owner:'provider', due:'Complete Dec 2', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Dec 2' },
-        ],
-        bra: [
-            { id:'bra-d1', name:'Brazilian CPF/CNPJ — Foreign Director Registration', rag:'g', owner:'client', due:'Complete Mar 5', dueClass:'dn', complete:true, uploadedBy:'Acme Corp Legal', uploadedOn:'Mar 5' },
-            { id:'bra-d2', name:'Articles of Association (Contrato Social)', rag:'a', owner:'provider', due:'In Drafting', complete:false, instructions:'Must be drafted in Portuguese and registered at Junta Comercial. Notarial certification required.', assignee:'Marcus Reyes' },
-            { id:'bra-d3', name:'Junta Comercial Filing — State Commercial Registry', rag:'a', owner:'provider', due:'Pending articles', complete:false, instructions:'Submit Contrato Social to the relevant state Junta. Processing time 2–6 weeks.', assignee:'Marcus Reyes' },
-            { id:'bra-d4', name:'CNPJ Registration — Receita Federal', rag:'a', owner:'provider', due:'After Junta approval', complete:false, instructions:'National company tax ID. Apply online via Receita Federal portal once Junta registration confirmed.', assignee:'Marcus Reyes' },
-            { id:'bra-d5', name:'State ICMS Registration (if applicable)', rag:'a', owner:'provider', due:'After CNPJ receipt', complete:false, instructions:'Required if selling goods in-state. Services entity may be exempt.', assignee:'Marcus Reyes' },
-            { id:'bra-d6', name:'Municipal ISS Registration (services tax)', rag:'a', owner:'provider', due:'After CNPJ receipt', complete:false, instructions:'Municipal services tax registration. Varies by municipality.', assignee:'Marcus Reyes' },
-            { id:'bra-d7', name:'Corporate Bank Account — Itaú / Bradesco', rag:'g', owner:'provider', due:'Account opened Mar 8', dueClass:'dn', complete:true, uploadedBy:'Marcus Reyes', uploadedOn:'Mar 8' },
-            { id:'bra-d8', name:'Power of Attorney — Local Representative', rag:'g', owner:'client', due:'Received Mar 3', dueClass:'dn', complete:true, uploadedBy:'Jane Davies', uploadedOn:'Mar 3' },
-            { id:'bra-d9', name:'Apostilled Parent Company Documents', rag:'a', owner:'client', due:'Due Mar 25', complete:false, instructions:'Certificate of Incorporation + Good Standing. Apostille via US Secretary of State then sworn Portuguese translation.', assignee:'Jane Davies' },
-        ],
-        gbr: [
-            { id:'gbr-d1', name:'Companies House — Certificate of Incorporation', rag:'g', owner:'provider', due:'Complete Nov 8', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Nov 8' },
-            { id:'gbr-d2', name:'Memorandum & Articles of Association', rag:'g', owner:'provider', due:'Complete Nov 8', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Nov 8' },
-            { id:'gbr-d3', name:'HMRC Corporation Tax Registration', rag:'g', owner:'provider', due:'Complete Nov 20', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Nov 20' },
-            { id:'gbr-d4', name:'VAT Registration — HMRC', rag:'g', owner:'provider', due:'Complete Nov 22', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Nov 22' },
-            { id:'gbr-d5', name:'PSC Register — Persons with Significant Control', rag:'g', owner:'client', due:'Complete Nov 15', dueClass:'dn', complete:true, uploadedBy:'Meridian Partners Legal', uploadedOn:'Nov 15' },
-            { id:'gbr-d6', name:'GBP Bank Account — Barclays Business', rag:'g', owner:'provider', due:'Complete Dec 3', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Dec 3' },
-            { id:'gbr-d7', name:'Annual Confirmation Statement — Companies House', rag:'a', owner:'provider', due:'Due Apr 2025', complete:false, instructions:'First annual confirmation statement due 12 months after incorporation. Fee £34.', assignee:'Lena Pfeiffer' },
-        ],
-        are: [
-            { id:'are-d1', name:'Free Zone Initial Approval — DMCC', rag:'g', owner:'provider', due:'Complete Feb 3', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Feb 3' },
-            { id:'are-d2', name:'Trade Name Reservation', rag:'g', owner:'provider', due:'Complete Feb 3', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Feb 3' },
-            { id:'are-d3', name:'Memorandum of Association — UAE', rag:'a', owner:'provider', due:'In Preparation', complete:false, instructions:'Must be attested by DMCC legal team. Share structure confirmation required from client.', assignee:'Ji-Young Choi' },
-            { id:'are-d4', name:'Trade Licence — Commercial', rag:'a', owner:'provider', due:'Pending MoA', complete:false, instructions:'Issued after MoA attestation. Processing time 5–10 working days.', assignee:'Ji-Young Choi' },
-            { id:'are-d5', name:'Flexi-Desk Office Tenancy Agreement', rag:'g', owner:'provider', due:'Complete Feb 10', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Feb 10' },
-            { id:'are-d6', name:'Director/Shareholder Passport Copies', rag:'g', owner:'client', due:'Received Jan 28', dueClass:'dn', complete:true, uploadedBy:'Meridian Partners', uploadedOn:'Jan 28' },
-            { id:'are-d7', name:'UAE VAT Registration — FTA', rag:'a', owner:'provider', due:'After licence receipt', complete:false, instructions:'Register with Federal Tax Authority once trade licence issued. Mandatory if revenue >AED 375k.', assignee:'Ji-Young Choi' },
-            { id:'are-d8', name:'Establishment Card — MOHRE', rag:'a', owner:'provider', due:'After licence receipt', complete:false, instructions:'Required before any employee visa applications can be submitted.', assignee:'Ji-Young Choi' },
-            { id:'are-d9', name:'Corporate Bank Account — Emirates NBD', rag:'a', owner:'provider', due:'Pending licence', complete:false, instructions:'Bank requires valid trade licence before account opening. KYC pack submitted and approved.', assignee:'Ji-Young Choi' },
-        ],
-        deu2: [
-            { id:'deu2-d1', name:'Shareholder KYC & Source of Funds Pack', rag:'a', owner:'client', due:'Partially received', complete:false, instructions:'AML-compliant KYC required for all shareholders >25%. Fund manager regulations require enhanced due diligence.', assignee:'Northfield Legal' },
-            { id:'deu2-d2', name:'Notarial Deed of Formation (GmbH-Vertrag)', rag:'r', owner:'provider', due:'Not scheduled', dueClass:'ov', complete:false, instructions:'BLOCKER: Notary appointment not yet booked. Must be scheduled before any other steps can proceed.', assignee:'Lena Pfeiffer' },
-            { id:'deu2-d3', name:'EUR 25,000 Share Capital — Escrow Deposit', rag:'a', owner:'client', due:'Pending notary', complete:false, instructions:'Full EUR 25,000 minimum capital must be deposited before notarial signing. Bank confirmation letter required.', assignee:'Northfield Finance' },
-            { id:'deu2-d4', name:'Commercial Register Filing (Handelsregister)', rag:'a', owner:'provider', due:'After notarial deed', complete:false, instructions:'Cannot be submitted until notarial deed signed and capital confirmed.', assignee:'Lena Pfeiffer' },
-            { id:'deu2-d5', name:'Tax Registration — Finanzamt Munich', rag:'a', owner:'provider', due:'After HRB number', complete:false, instructions:'Fragebogen zur steuerlichen Erfassung. Obtain Steuernummer + USt-IdNr.', assignee:'Lena Pfeiffer' },
-            { id:'deu2-d6', name:'ELSTER Portal Registration', rag:'a', owner:'provider', due:'After Steuernummer', complete:false, instructions:'Digital filing portal. Cannot register until Steuernummer confirmed.', assignee:'Lena Pfeiffer' },
-            { id:'deu2-d7', name:'EUR Bank Account — Commerzbank', rag:'g', owner:'provider', due:'Account reserved', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Feb 20' },
-            { id:'deu2-d8', name:'Registered Address — Munich', rag:'g', owner:'provider', due:'Confirmed', dueClass:'dn', complete:true, uploadedBy:'Lena Pfeiffer', uploadedOn:'Feb 18' },
-        ],
-        sgp2: [
-            { id:'sgp2-d1', name:'ACRA Name Reservation', rag:'g', owner:'provider', due:'Reserved Feb 10', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Feb 10' },
-            { id:'sgp2-d2', name:'Incorporation Application — BizFile+', rag:'g', owner:'provider', due:'Complete Feb 11', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Feb 11' },
-            { id:'sgp2-d3', name:'Corppass Admin Activation', rag:'r', owner:'client', due:'Overdue 3 days', dueClass:'ov', complete:false, instructions:'BLOCKER: Client IT contact has not activated Corppass administrator account. MOM, IRAS and ACRA access all blocked until resolved.', assignee:'Northfield IT' },
-            { id:'sgp2-d4', name:'IRAS Corporate Tax Registration', rag:'a', owner:'provider', due:'Blocked by Corppass', complete:false, instructions:'Cannot register with IRAS until Corppass admin activated by client.', assignee:'David Tan' },
-            { id:'sgp2-d5', name:'Employment Pass — Director', rag:'a', owner:'provider', due:'Blocked by Corppass', complete:false, instructions:'EP application requires MOM portal access via Corppass.', assignee:'David Tan' },
-            { id:'sgp2-d6', name:'Corporate Bank Account — OCBC', rag:'g', owner:'provider', due:'Opened Feb 18', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Feb 18' },
-            { id:'sgp2-d7', name:'Registered Agent Confirmation', rag:'g', owner:'provider', due:'Complete Feb 11', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Feb 11' },
-        ],
-        are2: [
-            { id:'are2-d1', name:'DED Initial Approval — Mainland LLC', rag:'g', owner:'provider', due:'Complete Jan 15', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Jan 15' },
-            { id:'are2-d2', name:'Local Service Agent Agreement (LSA)', rag:'g', owner:'provider', due:'Complete Jan 18', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Jan 18' },
-            { id:'are2-d3', name:'Memorandum of Association — Mainland', rag:'g', owner:'provider', due:'Complete Jan 22', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Jan 22' },
-            { id:'are2-d4', name:'Trade Licence — DED Dubai', rag:'g', owner:'provider', due:'Complete Feb 1', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Feb 1' },
-            { id:'are2-d5', name:'Corporate Tax Registration — FTA', rag:'a', owner:'provider', due:'In Progress', complete:false, instructions:'9% UAE Corporate Tax registration. Mandatory for all entities with revenue >AED 375k.', assignee:'Ji-Young Choi' },
-            { id:'are2-d6', name:'VAT Registration — FTA', rag:'a', owner:'provider', due:'In Progress', complete:false, instructions:'Federal Tax Authority VAT registration. TRN number expected within 5–10 working days.', assignee:'Ji-Young Choi' },
-            { id:'are2-d7', name:'Establishment Card & Visa Quota', rag:'a', owner:'provider', due:'Submitted', complete:false, instructions:'MOHRE establishment card required before any employee visas sponsored. Quota application submitted.', assignee:'Ji-Young Choi' },
-            { id:'are2-d8', name:'Corporate Bank Account — ADCB', rag:'g', owner:'provider', due:'Opened Jan 28', dueClass:'dn', complete:true, uploadedBy:'Ji-Young Choi', uploadedOn:'Jan 28' },
-            { id:'are2-d9', name:'Economic Substance Notification — MOHRE', rag:'a', owner:'provider', due:'Due Mar 31', complete:false, instructions:'Annual economic substance notification required. Must confirm relevant activities conducted in UAE.', assignee:'Ji-Young Choi' },
-        ],
-        aus: [
-            { id:'aus-d1', name:'ASIC Company Registration — ACN', rag:'g', owner:'provider', due:'Complete Oct 5', dueClass:'dn', complete:true, uploadedBy:'Sarah Kim', uploadedOn:'Oct 5' },
-            { id:'aus-d2', name:'ABN Registration — ATO', rag:'g', owner:'provider', due:'Complete Oct 6', dueClass:'dn', complete:true, uploadedBy:'Sarah Kim', uploadedOn:'Oct 6' },
-            { id:'aus-d3', name:'GST Registration — ATO', rag:'g', owner:'provider', due:'Complete Oct 6', dueClass:'dn', complete:true, uploadedBy:'Sarah Kim', uploadedOn:'Oct 6' },
-            { id:'aus-d4', name:'Director ID — myGovID', rag:'g', owner:'client', due:'Complete Oct 10', dueClass:'dn', complete:true, uploadedBy:'Vantage Global', uploadedOn:'Oct 10' },
-            { id:'aus-d5', name:'AUD Bank Account — ANZ Business', rag:'g', owner:'provider', due:'Complete Oct 14', dueClass:'dn', complete:true, uploadedBy:'Sarah Kim', uploadedOn:'Oct 14' },
-            { id:'aus-d6', name:'ATO Business Portal Registration', rag:'g', owner:'provider', due:'Complete Oct 12', dueClass:'dn', complete:true, uploadedBy:'Sarah Kim', uploadedOn:'Oct 12' },
-            { id:'aus-d7', name:'Annual ASIC Review — First Statement', rag:'a', owner:'provider', due:'Due Oct 2025', complete:false, instructions:'Annual company review statement due each year on the anniversary of registration. Fee AUD 310.', assignee:'Sarah Kim' },
-        ],
-        sgp3: [
-            { id:'sgp3-d1', name:'ACRA Incorporation — UEN Issued', rag:'g', owner:'provider', due:'Complete Nov 3', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Nov 3' },
-            { id:'sgp3-d2', name:'Corppass Admin Setup', rag:'g', owner:'client', due:'Complete Nov 5', dueClass:'dn', complete:true, uploadedBy:'Vantage Global IT', uploadedOn:'Nov 5' },
-            { id:'sgp3-d3', name:'IRAS Registration', rag:'g', owner:'provider', due:'Complete Nov 6', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Nov 6' },
-            { id:'sgp3-d4', name:'Employment Pass Applications', rag:'g', owner:'provider', due:'Complete Nov 18', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Nov 18' },
-            { id:'sgp3-d5', name:'Corporate Bank Account — UOB', rag:'g', owner:'provider', due:'Complete Nov 20', dueClass:'dn', complete:true, uploadedBy:'David Tan', uploadedOn:'Nov 20' },
-            { id:'sgp3-d6', name:'Annual Return — ACRA BizFile+', rag:'a', owner:'provider', due:'Due Nov 2025', complete:false, instructions:'Annual return due within 5 months of financial year end. Financial statements must be filed if revenue >SGD 500k.', assignee:'David Tan' },
-        ],
-    };
-
-    const D2_TASKS = {
-        arm: [
-            { id:'arm-t1', icon:'🧾', name:'VAT Return — Q4 2024', desc:'Filed via SRC e-services · Nil return (pre-revenue)', rag:'g', due:'Filed Mar 20', dueClass:'ok', freq:'Quarterly', complete:true, steps:['Log in to SRC e-services (arm-tax.am)','Navigate to VAT → Quarterly Return','Enter output/input VAT (nil for pre-revenue)','Submit by 20th of month following quarter','Upload filing confirmation here'] },
-            { id:'arm-t2', icon:'📊', name:'Advance Profit Tax — Q1 2025', desc:'Quarterly advance on estimated annual profit · 18% rate', rag:'a', due:'Due Apr 25', dueClass:'ov', freq:'Quarterly', complete:false, steps:['Provider prepares estimated profit calculation','Client confirms revenue/expense data for period','File via SRC portal — Form 901','Pay via Ameriabank business account by Apr 25','Upload payment confirmation'] },
-            { id:'arm-t3', icon:'👥', name:'Social Insurance Contribution — Mar 2025', desc:'Employer + employee contribution on payroll', rag:'a', due:'Due Apr 15', dueClass:'', freq:'Monthly', complete:false, steps:['Receive payroll data from client','Calculate contributions per employee (employer 3.5%, employee 2.5–5%)','Submit declaration via State Employment Agency portal','Transfer funds by 15th of following month','Upload payment receipt'] },
-            { id:'arm-t4', icon:'🧾', name:'VAT Return — Q1 2025', desc:'Quarterly VAT filing · AMD returns', rag:'a', due:'Due Apr 20', dueClass:'', freq:'Quarterly', complete:false, steps:['Gather all sales and purchase invoices for Q1','Calculate output VAT (20% on applicable sales)','Offset against input VAT on business expenses','File via SRC e-services by Apr 20','Settle any net VAT liability'] },
-            { id:'arm-t5', icon:'📋', name:'Annual Profit Tax Return — 2025', desc:'Full year · auditor required if turnover > AMD 300M', rag:'upcoming', due:'Due Apr 15, 2026', dueClass:'', freq:'Annual', complete:false, steps:['Compile full year financial statements','Engage auditor if turnover threshold met','Calculate tax at 18% on taxable profit','Submit to SRC and pay balance of tax','File statutory accounts'] },
-            { id:'arm-t6', icon:'🏛', name:'Statistical Report — Form 1-IA', desc:'State Statistics Committee annual return', rag:'upcoming', due:'Due Feb 1, 2026', dueClass:'', freq:'Annual', complete:false, steps:['Gather headcount and financial data','Complete Form 1-IA on statistics.am portal','Submit by February 1 following year end'] },
-        ],
-    };
-
-    const HISTORY = {
-        arm: [
-            { dot:'📤', cls:'', act:'Director passport copies (notarised) uploaded by <strong>Jane Davies</strong> — accepted immediately.', time:'Today 10:32 · Mar 5, 2025', docLink:{ label:'Director_Passports.pdf', caseId:'arm', docName:'Director_Passports_ARM' } },
-            { dot:'💬', cls:'', act:'<strong>Sarah Kim</strong> commented: <em>"Arman — confirm Form P can initiate once CoI received. Jane has been chased again today."</em>', time:'Mar 4, 14:22' },
-            { dot:'🚨', cls:'bl', act:'<strong>Blocker escalated:</strong> Certificate of Incorporation now 6 days overdue. Automated reminder #2 sent to <strong>Jane Davies</strong>. Status set to Blocked.', time:'Mar 3, 09:00' },
-            { dot:'📝', cls:'', act:'Draft Charter completed and uploaded by <strong>Arman Mkrtchyan</strong>. Awaiting client review of director names and share distribution.', time:'Feb 28, 15:14', docLink:{ label:'Draft_Charter_ARM_v1.pdf', caseId:'arm', docName:'Draft_Charter_AM' } },
-            { dot:'🏦', cls:'', act:'Ameriabank CJSC confirmed AMD and USD corporate accounts opened. Initial capital deposited. <strong>Arman Mkrtchyan</strong>', time:'Mar 1, 11:45', docLink:{ label:'Ameriabank_Account_Confirmation.pdf', caseId:'arm', docName:'Bank_Confirmation_AM' } },
-            { dot:'📋', cls:'', act:'State Registration Application (Form P) drafted. Submission blocked pending Certificate of Incorporation. <strong>Arman Mkrtchyan</strong>', time:'Feb 27, 10:08' },
-            { dot:'🔏', cls:'', act:'Company seal ordered from official stamp manufacturer. Confirmation received. <strong>Arman Mkrtchyan</strong>', time:'Feb 26, 16:30', docLink:{ label:'Seal_Order_Confirmation.pdf', caseId:'arm', docName:'Seal_Confirmation_AM' } },
-            { dot:'🚨', cls:'bl', act:'<strong>Blocker raised:</strong> Certificate of Incorporation not received from client. First automated reminder sent to <strong>Jane Davies</strong>.', time:'Feb 25, 09:00' },
-            { dot:'📞', cls:'', act:'Kick-off call completed. Scope confirmed: LLC, single director, 100% US ownership, Yerevan address. <strong>Sarah Kim + Jane Davies</strong>', time:'Feb 20, 14:00' },
-            { dot:'📤', cls:'', act:'Document checklist sent to <strong>Jane Davies</strong> via portal. 5 client documents requested. Target receipt: Feb 24.', time:'Feb 14, 09:30' },
-            { dot:'🗂', cls:'', act:'Case <strong>#ARM-2025-001</strong> opened. Assigned: <strong>Arman Mkrtchyan</strong> (in-country) + <strong>Sarah Kim</strong> (case manager). 8 document tasks generated.', time:'Feb 12, 2025' },
-            { dot:'🧾', cls:'d2', act:'<strong>VAT Return Q4 2024</strong> filed via SRC e-services. Nil return. Ref: <em>SRC-2025-VAT-00291</em>. <strong>Arman Mkrtchyan</strong>', time:'Mar 20, 2025', docLink:{ label:'VAT_Return_Q42024_Filed.pdf', caseId:'arm', docName:'VAT_Return_Q42024_AM' } },
-            { dot:'📊', cls:'d2', act:'<strong>Advance Profit Tax Q1 2025</strong> preparation initiated. Payroll and revenue data requested from <strong>Jane Davies</strong>. Due Apr 25.', time:'Mar 18, 2025' },
-            { dot:'🏛', cls:'d2', act:'Tax registration confirmed with SRC. TIN issued. Entity registered for VAT from Jan 1 2025. <strong>Arman Mkrtchyan</strong>', time:'Mar 10, 2025' },
-            { dot:'📅', cls:'d2', act:'Day 2 compliance schedule created and shared. 6 recurring obligations mapped for 2025. <strong>Sarah Kim</strong>', time:'Mar 8, 2025' },
-        ],
-        deu: [
-            { dot:'📝', cls:'', act:'Commercial Register application submitted to Handelsregister by <strong>Lena Pfeiffer</strong>. HRB number expected 2–4 weeks.', time:'Feb 15, 2025' },
-            { dot:'🔏', cls:'', act:'Notarial deed of GmbH formation signed before Frankfurt notary. Share capital EUR 25,000 deposited. <strong>Lena Pfeiffer</strong>', time:'Feb 2, 2025', docLink:{ label:'Notarial_Deed_GmbH.pdf', caseId:'deu', docName:'Notarial_Deed_DEU' } },
-            { dot:'🏦', cls:'', act:'Deutsche Bank EUR corporate account opened. SEPA details confirmed. <strong>Lena Pfeiffer</strong>', time:'Feb 10, 2025', docLink:{ label:'Deutsche_Bank_Confirmation.pdf', caseId:'deu', docName:'Bank_Confirmation_DEU' } },
-            { dot:'📋', cls:'', act:'Shareholders list and KYC pack received from <strong>Acme Corp Legal</strong>. All documents verified and AML-compliant.', time:'Jan 15, 2025' },
-            { dot:'📞', cls:'', act:'Kick-off call — GmbH formation scope confirmed. Single director, 100% Acme Corp ownership, Frankfurt registered address.', time:'Jan 10, 2025' },
-            { dot:'🗂', cls:'', act:'Case <strong>#DEU-2025-001</strong> opened. Assigned: <strong>Lena Pfeiffer</strong> (in-country) + <strong>Sarah Kim</strong> (case manager).', time:'Jan 8, 2025' },
-            { dot:'📊', cls:'d2', act:'Steuerberatung (tax advisory) engaged. Annual corporate tax and VAT filing schedule agreed. <strong>Lena Pfeiffer</strong>', time:'Feb 20, 2025' },
-        ],
-        sgp: [
-            { dot:'✅', cls:'', act:'All formation documents complete. <strong>Singapore Pte Ltd fully operational.</strong> Bank active, Corppass configured, EP approved.', time:'Dec 15, 2024' },
-            { dot:'🏦', cls:'', act:'DBS corporate account opened. SGD and USD accounts active. <strong>David Tan</strong>', time:'Dec 15, 2024', docLink:{ label:'DBS_Account_Confirmation.pdf', caseId:'sgp', docName:'Bank_Confirmation_SGP' } },
-            { dot:'👤', cls:'', act:'Employment Pass In-Principle Approval received from MOM. <strong>David Tan</strong>', time:'Dec 12, 2024', docLink:{ label:'EP_IPA_SGP.pdf', caseId:'sgp', docName:'EP_Approval_SGP' } },
-            { dot:'💳', cls:'', act:'IRAS corporate tax registration complete. Entity registered for GST. <strong>David Tan</strong>', time:'Dec 8, 2024' },
-            { dot:'🔐', cls:'', act:'Corppass administrator activated by Acme Corp IT. MOM, IRAS and ACRA portal access confirmed.', time:'Dec 5, 2024' },
-            { dot:'🏛', cls:'', act:'ACRA incorporation complete. UEN issued same-day via BizFile+. <strong>David Tan</strong>', time:'Dec 2, 2024', docLink:{ label:'ACRA_Certificate_SGP.pdf', caseId:'sgp', docName:'ACRA_Certificate_SGP' } },
-            { dot:'🗂', cls:'', act:'Case <strong>#SGP-2024-004</strong> opened. Assigned: <strong>David Tan</strong> (APAC associate).', time:'Nov 28, 2024' },
-        ],
-        bra: [
-            { dot:'🏦', cls:'', act:'Itaú corporate account opened. BRL and USD accounts active. Power of Attorney confirmed. <strong>Marcus Reyes</strong>', time:'Mar 8, 2025', docLink:{ label:'Itau_Account_Confirmation.pdf', caseId:'bra', docName:'Bank_Confirmation_BRA' } },
-            { dot:'📤', cls:'', act:'Power of Attorney received from <strong>Jane Davies</strong> — notarised and apostilled. Local representative appointed.', time:'Mar 3, 2025' },
-            { dot:'📝', cls:'', act:'Draft Contrato Social (Articles of Association) in preparation by <strong>Marcus Reyes</strong>. Portuguese language review underway.', time:'Feb 25, 2025' },
-            { dot:'💳', cls:'', act:'CNPJ foreign director CPF registration submitted to Receita Federal by <strong>Acme Corp Legal</strong>.', time:'Feb 20, 2025' },
-            { dot:'📞', cls:'', act:'Kick-off call — Ltda formation confirmed. São Paulo registered address, 100% Acme Corp ownership.', time:'Feb 18, 2025' },
-            { dot:'🗂', cls:'', act:'Case <strong>#BRA-2025-002</strong> opened. Assigned: <strong>Marcus Reyes</strong> (LATAM in-country).', time:'Feb 15, 2025' },
-        ],
-        gbr: [
-            { dot:'🏦', cls:'', act:'Barclays GBP business account fully operational. Faster Payments and BACS active. <strong>Lena Pfeiffer</strong>', time:'Dec 3, 2024', docLink:{ label:'Barclays_Account_Conf.pdf', caseId:'gbr', docName:'Bank_Confirmation_GBR' } },
-            { dot:'💳', cls:'', act:'HMRC VAT registration complete. VAT number issued. Quarterly returns scheduled. <strong>Lena Pfeiffer</strong>', time:'Nov 22, 2024' },
-            { dot:'💳', cls:'', act:'HMRC Corporation Tax registration complete. UTR issued. First accounting period confirmed to Nov 2025. <strong>Lena Pfeiffer</strong>', time:'Nov 20, 2024' },
-            { dot:'📋', cls:'', act:'PSC register confirmed — Meridian Partners identified as Person with Significant Control.', time:'Nov 15, 2024' },
-            { dot:'🏛', cls:'', act:'Companies House incorporation complete. Certificate issued same day online. <strong>Lena Pfeiffer</strong>', time:'Nov 8, 2024', docLink:{ label:'CoH_Certificate_GBR.pdf', caseId:'gbr', docName:'CoH_Certificate_GBR' } },
-            { dot:'🗂', cls:'', act:'Case <strong>#GBR-2024-003</strong> opened. Assigned: <strong>Lena Pfeiffer</strong> (EMEA).', time:'Nov 5, 2024' },
-            { dot:'📅', cls:'d2', act:'Annual Confirmation Statement reminder set for Nov 2025. CT600 first filing due Jan 2026. <strong>Lena Pfeiffer</strong>', time:'Dec 10, 2024' },
-        ],
-        are: [
-            { dot:'📋', cls:'', act:'MoA attestation in progress with DMCC legal team. Share structure confirmation received from <strong>Meridian Partners</strong>.', time:'Feb 20, 2025' },
-            { dot:'🏢', cls:'', act:'Flexi-desk tenancy agreement signed at DMCC premises. 12-month term. <strong>Ji-Young Choi</strong>', time:'Feb 10, 2025', docLink:{ label:'DMCC_Office_Agreement.pdf', caseId:'are', docName:'Office_Agreement_ARE' } },
-            { dot:'👤', cls:'', act:'Director and shareholder passport copies received. KYC pack complete and verified.', time:'Jan 28, 2025' },
-            { dot:'✅', cls:'', act:'DMCC Free Zone initial approval received. Trade name reserved: Meridian Partners Middle East DMCC. <strong>Ji-Young Choi</strong>', time:'Feb 3, 2025' },
-            { dot:'📞', cls:'', act:'Kick-off call — DMCC Free Zone LLC confirmed. Financial services licence not required at this stage.', time:'Jan 22, 2025' },
-            { dot:'🗂', cls:'', act:'Case <strong>#ARE-2025-001</strong> opened. Assigned: <strong>Ji-Young Choi</strong> (APAC/Gulf).', time:'Jan 20, 2025' },
-        ],
-        deu2: [
-            { dot:'🚨', cls:'bl', act:'<strong>Blocker raised:</strong> Notarial deed appointment not yet scheduled. HRB and all downstream filings blocked. Lena Pfeiffer to escalate.', time:'Mar 1, 2025' },
-            { dot:'🏦', cls:'', act:'Commerzbank EUR account reserved pending HRB number. Account opening application submitted. <strong>Lena Pfeiffer</strong>', time:'Feb 20, 2025' },
-            { dot:'📍', cls:'', act:'Munich registered address confirmed at Maximilianstrasse serviced office. <strong>Lena Pfeiffer</strong>', time:'Feb 18, 2025' },
-            { dot:'📋', cls:'', act:'KYC pack partially received. Fund manager AML enhanced due diligence pack still outstanding. <strong>Northfield Capital Legal</strong>', time:'Feb 10, 2025' },
-            { dot:'🗂', cls:'', act:'Case <strong>#DEU-2025-002</strong> opened. GmbH for fund management. Assigned: <strong>Lena Pfeiffer</strong> (in-country).', time:'Feb 5, 2025' },
-        ],
-        sgp2: [
-            { dot:'🚨', cls:'bl', act:'<strong>Blocker raised:</strong> Corppass admin not activated by Northfield IT. MOM, IRAS and ACRA portal access blocked. Second reminder sent.', time:'Mar 3, 2025' },
-            { dot:'🏦', cls:'', act:'OCBC corporate account opened. SGD account active, USD pending Corppass verification. <strong>David Tan</strong>', time:'Feb 18, 2025', docLink:{ label:'OCBC_Account_Confirmation.pdf', caseId:'sgp2', docName:'Bank_Confirmation_SGP2' } },
-            { dot:'🏛', cls:'', act:'ACRA incorporation complete. UEN issued. Company name confirmed. <strong>David Tan</strong>', time:'Feb 11, 2025', docLink:{ label:'ACRA_Certificate_SGP2.pdf', caseId:'sgp2', docName:'ACRA_Certificate_SGP2' } },
-            { dot:'🗂', cls:'', act:'Case <strong>#SGP-2025-002</strong> opened. Assigned: <strong>David Tan</strong> (APAC associate).', time:'Feb 7, 2025' },
-        ],
-        are2: [
-            { dot:'📊', cls:'d2', act:'Corporate Tax and VAT registration submitted to FTA. TRN expected within 5–10 working days. <strong>Ji-Young Choi</strong>', time:'Feb 20, 2025' },
-            { dot:'🏢', cls:'', act:'Establishment card application submitted to MOHRE. Visa quota of 4 positions requested. <strong>Ji-Young Choi</strong>', time:'Feb 15, 2025' },
-            { dot:'📄', cls:'', act:'DED Trade Licence issued. Commercial activity: logistics and supply chain management. <strong>Ji-Young Choi</strong>', time:'Feb 1, 2025', docLink:{ label:'DED_Trade_Licence_ARE2.pdf', caseId:'are2', docName:'Trade_Licence_ARE2' } },
-            { dot:'📝', cls:'', act:'MoA attested and registered. Local Service Agent agreement executed. <strong>Ji-Young Choi</strong>', time:'Jan 22, 2025', docLink:{ label:'MoA_Mainland_ARE2.pdf', caseId:'are2', docName:'MoA_ARE2' } },
-            { dot:'🏦', cls:'', act:'ADCB corporate account opened. AED and USD accounts active. <strong>Ji-Young Choi</strong>', time:'Jan 28, 2025', docLink:{ label:'ADCB_Account_Confirmation.pdf', caseId:'are2', docName:'Bank_Confirmation_ARE2' } },
-            { dot:'🏛', cls:'', act:'DED initial approval received. Trade name confirmed: Vantage Global Logistics LLC. <strong>Ji-Young Choi</strong>', time:'Jan 15, 2025' },
-            { dot:'🗂', cls:'', act:'Case <strong>#ARE-2025-002</strong> opened. Mainland LLC — DED Dubai. Assigned: <strong>Ji-Young Choi</strong>.', time:'Jan 10, 2025' },
-        ],
-        aus: [
-            { dot:'📅', cls:'d2', act:'First BAS (Business Activity Statement) lodged with ATO. GST nil return for Q1. <strong>Sarah Kim</strong>', time:'Feb 28, 2025' },
-            { dot:'🔐', cls:'', act:'ATO Business Portal fully configured. PAYG withholding set up. <strong>Sarah Kim</strong>', time:'Oct 12, 2024' },
-            { dot:'🏦', cls:'', act:'ANZ Business account opened. AUD account active, BPay and BECS set up. <strong>Sarah Kim</strong>', time:'Oct 14, 2024', docLink:{ label:'ANZ_Account_Confirmation.pdf', caseId:'aus', docName:'Bank_Confirmation_AUS' } },
-            { dot:'💳', cls:'', act:'Director ID obtained via myGovID. ABN and GST registration complete. <strong>Sarah Kim</strong>', time:'Oct 6, 2024' },
-            { dot:'🏛', cls:'', act:'ASIC registration complete. ACN issued. Certificate of Registration received. <strong>Sarah Kim</strong>', time:'Oct 5, 2024', docLink:{ label:'ASIC_Certificate_AUS.pdf', caseId:'aus', docName:'ASIC_Certificate_AUS' } },
-            { dot:'🗂', cls:'', act:'Case <strong>#AUS-2024-001</strong> opened. Pty Ltd formation. Assigned: <strong>Sarah Kim</strong> (APAC lead).', time:'Oct 1, 2024' },
-        ],
-        sgp3: [
-            { dot:'📅', cls:'d2', act:'First annual return reminder sent. Due within 5 months of financial year end (Nov 2025). <strong>David Tan</strong>', time:'Mar 1, 2025' },
-            { dot:'🏦', cls:'', act:'UOB corporate account opened. SGD account active, internet banking configured. <strong>David Tan</strong>', time:'Nov 20, 2024', docLink:{ label:'UOB_Account_Confirmation.pdf', caseId:'sgp3', docName:'Bank_Confirmation_SGP3' } },
-            { dot:'👤', cls:'', act:'Employment Pass applications approved by MOM. Two EP holders confirmed. <strong>David Tan</strong>', time:'Nov 18, 2024' },
-            { dot:'💳', cls:'', act:'IRAS registration complete. Entity registered for GST (voluntary). <strong>David Tan</strong>', time:'Nov 6, 2024' },
-            { dot:'🔐', cls:'', act:'Corppass admin activated by Vantage Global IT. Portal access confirmed across MOM, IRAS, ACRA.', time:'Nov 5, 2024' },
-            { dot:'🏛', cls:'', act:'ACRA incorporation complete. UEN issued same day. <strong>David Tan</strong>', time:'Nov 3, 2024', docLink:{ label:'ACRA_Certificate_SGP3.pdf', caseId:'sgp3', docName:'ACRA_Certificate_SGP3' } },
-            { dot:'🗂', cls:'', act:'Case <strong>#SGP-2024-003</strong> opened. Pte Ltd for Vantage Global APAC hub. Assigned: <strong>David Tan</strong>.', time:'Oct 28, 2024' },
-        ],
-    };
-
-    const REQ_DATA = {
-        am:{ time:'6–10 weeks', cards:[
-                {i:'🏛',t:'State Registration',s:['Prepare charter & memorandum of association','Submit to State Register of Legal Entities','Receive registration certificate (1–3 days)','Obtain company seal']},
-                {i:'💳',t:'Tax & Revenue (SRC)',s:['Register with State Revenue Committee','Obtain Tax ID (ՀVHH)','Register for VAT if turnover >AMD 115M','Establish quarterly reporting schedule']},
-                {i:'🏦',t:'Banking',s:['Open AMD and USD corporate accounts (Ameriabank/Ardshinbank)','Deposit minimum share capital','Register authorised signatories','Set up internet banking']},
-                {i:'👥',t:'Employment',s:['Register with State Employment Agency','Draft employment contracts in Armenian','Set up social insurance contributions','Establish monthly payroll cycle']},
-            ]},
-        au:{ time:'2–4 weeks', cards:[
-                {i:'🏛',t:'ASIC Registration',s:['Reserve name via ASIC Connect','Submit Form 201 — Application for Registration','Receive ACN & Certificate (same day online)','Set up ASIC Connect for ongoing filings']},
-                {i:'💳',t:'Tax & ABN',s:['Apply for ABN (Australian Business Number)','Register for GST if projected revenue >AUD 75k','Apply for Tax File Number','Set up BAS lodgement schedule']},
-                {i:'⚖️',t:'Director & Compliance',s:['Appoint ≥1 Australian resident director','Confirm registered office in Australia','Obtain Director ID via myGovID','File annual ASIC review statement']},
-                {i:'🏦',t:'Banking',s:['Open AUD corporate account','Set up Faster Payments and BECS','Register for BPAY','Connect to ATO Online Services for Businesses']},
-            ]},
-        de:{ time:'8–12 weeks', cards:[
-                {i:'📜',t:'Notarial Formation',s:['Draft articles of association (GmbH-Vertrag)','Schedule notarial deed appointment','Sign before German notary (est. €1,200–2,500)','Pay share capital into escrow account']},
-                {i:'🏛',t:'Commercial Register',s:['Submit application to Handelsregister via notary','Await court processing (2–4 weeks)','Receive HRB number','Publish formation notice in Bundesanzeiger']},
-                {i:'💳',t:'Tax Office',s:['Submit Fragebogen zur steuerlichen Erfassung to Finanzamt','Obtain Steuernummer (4–6 weeks)','Register for VAT (USt-IdNr) via BZSt','Enrol in ELSTER for digital filings']},
-                {i:'🏦',t:'Banking & Capital',s:['Open EUR account at German bank','Deposit minimum EUR 12,500 share capital','Obtain bank confirmation letter for register','Set up SEPA payment infrastructure']},
-            ]},
-        sg:{ time:'1–2 weeks', cards:[
-                {i:'🏛',t:'ACRA Incorporation',s:['Search & reserve company name via BizFile+','File incorporation application (same-day possible)','Receive UEN (Unique Entity Number)','Purchase ACRA business profile extract']},
-                {i:'💳',t:'Tax & IRAS',s:['Register corporate tax with IRAS','Apply for GST if revenue >SGD 1M','Obtain CorpTax filing credentials','File annual Form C-S (or C for large companies)']},
-                {i:'🔐',t:'Corppass Setup',s:['Designate Corppass Administrator','Assign user roles and access levels','Link to MOM, IRAS, ACRA portals','Enable two-factor authentication']},
-                {i:'👤',t:'Employment Pass',s:['Pre-assess via EP Online (EPOL)','Submit Employment Pass application','Receive In-Principle Approval (IPA)','Complete card collection and registration']},
-            ]},
-        gb:{ time:'1–3 weeks', cards:[
-                {i:'🏛',t:'Companies House',s:['Check name on Companies House register','File IN01 online — receive certificate same day','Register for WebFiling account','File annual Confirmation Statement (£34 fee)']},
-                {i:'💳',t:'HMRC Registration',s:['Register for Corporation Tax within 3 months of trading','Obtain UTR (Unique Taxpayer Reference)','Register for VAT if turnover >£90k (or voluntarily)','Set up PAYE if employing UK staff']},
-                {i:'📍',t:'Registered Office',s:['Confirm registered office in England/Wales/Scotland','Appoint director (no UK residency requirement)','Maintain statutory registers (PSC register)','Annual accounts at Companies House (9 months)']},
-                {i:'🏦',t:'Banking',s:['Open GBP business account','Set up Faster Payments and BACS Direct Debit','Register for HMRC Online Services','Consider FCA authorisation if financial services']},
-            ]},
-        ae:{ time:'4–8 weeks', cards:[
-                {i:'🏢',t:'Free Zone vs Mainland',s:['Choose: Free Zone (100% ownership) or Mainland (local partner/LSA required)','Select licence type: commercial, professional, or industrial','Reserve trade name via DED or Free Zone authority','Obtain initial approval and No Objection Certificate']},
-                {i:'📄',t:'Licensing & Registration',s:['Submit Memorandum & Articles of Association','Obtain trade licence from issuing authority','Register with Dubai Chamber / Abu Dhabi Chamber','Arrange office, flexi-desk or virtual office tenancy']},
-                {i:'💳',t:'Tax & VAT',s:['Register for UAE VAT if turnover >AED 375k','Obtain Tax Registration Number (TRN) from FTA','Set up quarterly VAT return filing','Register for 9% Corporate Tax (effective June 2023)']},
-                {i:'👤',t:'Visas & Staffing',s:['Apply for establishment card via MOHRE or Free Zone','Sponsor employee and investor visas','Obtain Emirates ID for all staff','Register for DEWS / GPSSA pension if applicable']},
-            ]},
-    };
-
-    const NC_DOCS = {
-        sub:    [{n:'Certificate of Incorporation (parent)',o:'client'},{n:'Apostilled Articles of Association',o:'client'},{n:'Director/Officer KYC Pack',o:'client'},{n:'Entity Registration Application',o:'provider'},{n:'Registered Address Confirmation',o:'provider'},{n:'Bank Account Opening',o:'provider'},{n:'Tax Registration',o:'provider'}],
-        branch: [{n:'Certified parent company documents',o:'client'},{n:'Board resolution to establish branch',o:'client'},{n:'Branch registration — local authority',o:'provider'},{n:'Local representative appointment',o:'provider'}],
-        rep:    [{n:'Authorisation letter from parent',o:'client'},{n:'Office lease agreement',o:'client'},{n:'Representative office registration',o:'provider'}],
-        jv:    [{n:'JV Agreement (signed)',o:'client'},{n:'Partner KYC documentation',o:'client'},{n:'Capital contribution evidence',o:'client'},{n:'JV entity formation application',o:'provider'},{n:'Shareholder register',o:'provider'}],
-    };
-
-    const COUNTRY_FLAGS = { au:'🇦🇺', de:'🇩🇪', sg:'🇸🇬', gb:'🇬🇧', ae:'🇦🇪', br:'🇧🇷', am:'🇦🇲', nl:'🇳🇱', mx:'🇲🇽', in:'🇮🇳' };
-
-    // ═══════════════════════════════════════════════
-    // UTILITIES
-    // ═══════════════════════════════════════════════
-    function uuid(){ return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);}); }
-
-    function toast(msg, type=''){
-        const w=document.getElementById('toastWrap');
-        const t=document.createElement('div');
-        t.className='toast'+(type?' '+type:'');
-        t.textContent=msg;
-        w.appendChild(t);
-        requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
-        setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3400);
+// Provides some nice color variation
+// Accepts an rgba object
+// returns a modified rgba object or a rgba string if true is passed in for argument 2
+var colorVariation = function (color, returnString) {
+    var r,g,b,a, variation;
+    r = Math.round(((Math.random() * config.colorVariation) - (config.colorVariation/2)) + color.r);
+    g = Math.round(((Math.random() * config.colorVariation) - (config.colorVariation/2)) + color.g);
+    b = Math.round(((Math.random() * config.colorVariation) - (config.colorVariation/2)) + color.b);
+    a = Math.random() + .5;
+    if (returnString) {
+        return "rgba(" + r + "," + g + "," + b + "," + a + ")";
+    } else {
+        return {r,g,b,a};
     }
+};
 
-    function downloadDoc(docName, clientId){
-        const uid=uuid();
-        const content=`SYNKRISIS — COMPLIANCE AS A SERVICE\n=====================================\n\nDOCUMENT PLACEHOLDER\nThis file represents a securely stored document in the Synkrisis document vault.\n\nDocument:   ${docName.replace(/_/g,' ')}\nClient ID:  ${clientId}\nFile UUID:  ${uid}\nRetrieved:  ${new Date().toISOString()}\nRetrieved by: Current session user\n\n--- CHAIN OF CUSTODY ---\nUploaded:   ${new Date(Date.now()-86400000*(Math.floor(Math.random()*10)+1)).toISOString()}\nVerified:   Synkrisis document vault checksum OK\nEncrypted:  AES-256 at rest · TLS 1.3 in transit\n\nIn production this placeholder is replaced by the actual\nuploaded document retrieved from secure storage.\n\nSYNKRISIS · synkrisis.co\n`;
-        const blob=new Blob([content],{type:'text/plain'});
-        const a=document.createElement('a');
-        a.href=URL.createObjectURL(blob);
-        a.download=docName+'__'+uid.slice(0,8)+'.txt';
-        document.body.appendChild(a);a.click();document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-        toast('⬇ Downloading '+docName.replace(/_/g,' ')+'…','teal');
-    }
+// Used to find the rocks next point in space, accounting for speed and direction
+var updateParticleModel = function (p) {
+    var a = 180 - (p.d + 90); // find the 3rd angle
+    p.d > 0 && p.d < 180 ? p.x += p.s * Math.sin(p.d) / Math.sin(p.s) : p.x -= p.s * Math.sin(p.d) / Math.sin(p.s);
+    p.d > 90 && p.d < 270 ? p.y += p.s * Math.sin(a) / Math.sin(p.s) : p.y -= p.s * Math.sin(a) / Math.sin(p.s);
+    return p;
+};
 
-    let _uploadTarget='';
-    function openUploadModal(docName){
-        _uploadTarget=docName;
-        document.getElementById('upload-doc-name').textContent=docName||'Select document';
-        document.getElementById('fileChosen').style.display='none';
-        document.getElementById('fileInput').value='';
-        openModal('uploadModal');
-    }
-    function handleFileChosen(e){ const f=e.target.files[0]; if(f) showChosen(f.name); }
-    function handleFileDrop(e){ const f=e.dataTransfer.files[0]; if(f) showChosen(f.name); }
-    function showChosen(name){ document.getElementById('fc-name').textContent='📄 '+name; document.getElementById('fileChosen').style.display='block'; }
-    function submitUpload(){ closeModal('uploadModal'); toast('✓ '+(_uploadTarget||'Document')+' submitted for review','teal'); }
+// Just the function that physically draws the particles
+// Physically? sure why not, physically.
+var drawParticle = function (x, y, r, c) {
+    ctx.beginPath();
+    ctx.fillStyle = c;
+    ctx.arc(x, y, r, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.closePath();
+};
 
-    function openModal(id){ document.getElementById(id).classList.add('open'); }
-    function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal('uploadModal'); closeModal('newCaseModal'); closeModal('welcomeModal'); closeAlerts(); } });
-
-    // ═══════════════════════════════════════════════
-    // SCREEN ROUTER
-    // ═══════════════════════════════════════════════
-    let _currentCaseId = 'arm';
-
-    function showScreen(name){
-        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
-        document.querySelectorAll('.mnav-tab').forEach(t=>t.classList.remove('on'));
-        document.getElementById('screen-'+name).classList.add('on');
-        document.getElementById('tab-'+name).classList.add('on');
-        if(name==='map') setTimeout(()=>lmap&&lmap.invalidateSize(),60);
-    }
-
-    function loadCase(caseId){
-        _currentCaseId = caseId;
-        renderFormationPane(caseId);
-        renderDay2Pane(caseId);
-        renderHistoryPane(caseId);
-        updateCasePhaseBadges(caseId);
-        showScreen('case');
-        // highlight sidebar
-        document.querySelectorAll('#sb-cases .sb-item').forEach(el=>{
-            el.classList.toggle('on', el.dataset.caseId===caseId);
-        });
-    }
-
-    function switchPhase(name, tab){
-        document.querySelectorAll('.phase-tab').forEach(t=>t.classList.remove('on'));
-        document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
-        tab.classList.add('on');
-        document.getElementById('pane-'+name).classList.add('on');
-    }
-
-    function filterSB(el, v){ document.querySelectorAll('.sb-pill').forEach(p=>p.classList.remove('on')); el.classList.add('on'); }
-
-    // Role personas
-    const ROLES = {
-        client:   { label:'Client',   initials:'JD', name:'Jane Davies',       clientId:'acme' },
-        provider: { label:'Provider', initials:'SK', name:'Sarah Kim',          clientId:null   },
-    };
-    let _currentRole = 'client';
-
-    function setRole(role, btn){
-        _currentRole = role;
-        document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('on'));
-        btn.classList.add('on');
-        // Update avatar initials
-        document.getElementById('mastAv').textContent = ROLES[role].initials;
-        // Show/hide provider tab
-        const pvTab = document.getElementById('tab-provider');
-        pvTab.style.display = role === 'provider' ? '' : 'none';
-        // If hiding provider tab and currently on provider screen, go to map
-        if(role === 'client' && document.getElementById('screen-provider').classList.contains('on')){
-            showScreen('map');
-        }
-        // Re-render sidebar with filtered cases
-        renderSidebar();
-        toast('Signed in as: ' + ROLES[role].name + ' (' + ROLES[role].label + ')','');
-    }
-
-    function pvSwitch(el, pane){ document.querySelectorAll('.pv-tab').forEach(t=>t.classList.remove('on')); document.querySelectorAll('.pv-pane').forEach(p=>p.classList.remove('on')); el.classList.add('on'); document.getElementById('pv-'+pane).classList.add('on'); }
-
-    // ═══════════════════════════════════════════════
-    // SIDEBAR
-    // ═══════════════════════════════════════════════
-    function renderSidebar(){
-        const container = document.getElementById('sb-cases');
-        const role = ROLES[_currentRole];
-        // Client sees only their own cases; Provider sees all
-        const visibleCases = role.clientId
-            ? CASES.filter(c => c.clientId === role.clientId)
-            : CASES;
-        container.innerHTML = visibleCases.map(c=>`
-    <div class="sb-item${c.id===_currentCaseId?' on':''}" data-case-id="${c.id}" onclick="loadCase('${c.id}')">
-      <span class="sb-flag">${c.flag}</span>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.country}</span>
-      <div class="pip ${c.rag}"></div>
-    </div>`).join('');
-    }
-
-    // ═══════════════════════════════════════════════
-    // FORMATION PANE
-    // ═══════════════════════════════════════════════
-    function renderFormationPane(caseId){
-        const cas = CASES.find(c=>c.id===caseId);
-        const docs = DOCS[caseId] || [];
-        const client = CLIENTS.find(c=>c.id===cas.clientId);
-        const manager = STAFF.find(s=>s.id===cas.manager);
-        const incountry = STAFF.find(s=>s.id===cas.incountry);
-        const complete = docs.filter(d=>d.complete).length;
-        const clientDocs = docs.filter(d=>d.owner==='client');
-        const providerDocs = docs.filter(d=>d.owner==='provider');
-        const blocker = docs.find(d=>d.rag==='r');
-
-        const renderDocRow = (d) => `
-    <div class="doc-row dr-${d.rag}" id="dr-${d.id}">
-      <div class="doc-main" onclick="toggleDocDrawer('dd-${d.id}')">
-        <div class="doc-rdot ${d.rag}"></div>
-        <span class="own-tag ${d.owner==='client'?'ot-c':'ot-p'}">${d.owner==='client'?'Client':'Provider'}</span>
-        <span class="doc-name${d.complete?' done':''}">${d.name}${d.complete?' ✓':''}</span>
-        <span class="doc-due ${d.dueClass||''}">${d.due}</span>
-      </div>
-      <div class="doc-acts">
-        ${d.complete
-            ? `<button class="doc-btn dl" title="Download" onclick="downloadDoc('${d.id.replace(/-/g,'_')}','${cas.clientId}');event.stopPropagation()">⬇</button>
-             <button class="doc-btn" title="Version history" onclick="toast('1 version on file — ${d.uploadedOn}','');event.stopPropagation()">🕐</button>`
-            : `<button class="doc-btn ul" title="Upload" onclick="openUploadModal('${d.name.substring(0,30)}');event.stopPropagation()">⬆</button>
-             <button class="doc-btn" title="Comment" onclick="toast('Comment thread opened','');event.stopPropagation()">💬</button>`
-        }
-      </div>
-    </div>
-    <div id="dd-${d.id}" class="doc-drawer" style="display:none">
-      <div class="dd-body">
-        <div class="dd-meta">
-          <div class="dd-lbl">Document</div><div class="dd-val"><strong>${d.name}</strong></div>
-          ${d.complete
-            ? `<div class="dd-lbl">Status</div><div class="dd-val" style="color:var(--rg)"><strong>✓ ${d.due}</strong></div>
-               <div class="dd-lbl">Uploaded by</div><div class="dd-val">${d.uploadedBy} · ${d.uploadedOn}</div>
-               <div class="dd-lbl">File UUID</div><div class="dd-uuid">${uuid()}</div>
-               ${d.note?`<div class="dd-lbl">Notes</div><div class="dd-val">${d.note}</div>`:''}`
-            : `<div class="dd-lbl">Status</div><div class="dd-val" style="color:var(--r${d.rag})"><strong>${d.rag==='r'?'⚠ Overdue / Blocked':'Pending'}</strong></div>
-               ${d.instructions?`<div class="dd-lbl">Instructions</div><div class="dd-val">${d.instructions}</div>`:''}
-               ${d.assignee?`<div class="dd-lbl">Assigned to</div><div class="dd-val">${d.assignee}</div>`:''}`
-        }
-        </div>
-        <div class="dd-acts">
-          ${d.complete
-            ? `<button class="btn-p teal sm" onclick="downloadDoc('${d.id.replace(/-/g,'_')}','${cas.clientId}')">⬇ Download</button>
-               <button class="btn-s sm" onclick="openUploadModal('${d.name.substring(0,25)}')">Replace</button>`
-            : `<button class="btn-p sm" onclick="openUploadModal('${d.name.substring(0,25)}')">Upload</button>
-               <button class="btn-s sm" onclick="toast('Reminder sent','teal')">Chase</button>`
-        }
-        </div>
-      </div>
-    </div>`;
-
-        const aside = `
-    <div class="info-card">
-      <div class="ic-title">Case Details</div>
-      <div class="ic-row"><span>Entity</span><strong>${cas.type}</strong></div>
-      <div class="ic-row"><span>Jurisdiction</span><strong>${cas.flag} ${cas.country}</strong></div>
-      <div class="ic-row"><span>Client</span><strong>${client.name}</strong></div>
-      <div class="ic-row"><span>Formation</span><strong style="color:var(--r${cas.rag})">${cas.rag==='r'?'Blocked':cas.rag==='a'?'In Progress':'Complete'}</strong></div>
-    </div>
-    <div class="info-card">
-      <div class="ic-title">Documents</div>
-      <div class="ic-row"><span>Total</span><strong>${docs.length}</strong></div>
-      <div class="ic-row"><span>Complete</span><strong style="color:var(--rg)">${complete}</strong></div>
-      <div class="ic-row"><span>Pending</span><strong style="color:var(--ra)">${docs.filter(d=>d.rag==='a').length}</strong></div>
-      <div class="ic-row"><span>Overdue/Blocked</span><strong style="color:var(--rr)">${docs.filter(d=>d.rag==='r').length}</strong></div>
-    </div>
-    <div class="info-card">
-      <div class="ic-title">Stakeholders</div>
-      ${manager?`<div style="display:flex;align-items:center;gap:8px;padding:5px 0"><div style="width:26px;height:26px;border-radius:50%;background:var(--teal-lt);color:var(--teal);display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0">${manager.av}</div><div><div style="font-size:12px;font-weight:500">${manager.name}</div><div style="font-size:10.5px;color:var(--ink-soft)">Provider · ${manager.role}</div></div></div>`:''}
-      ${incountry&&incountry.id!==manager?.id?`<div style="display:flex;align-items:center;gap:8px;padding:5px 0"><div style="width:26px;height:26px;border-radius:50%;background:${incountry.avBg};color:${incountry.avFg};display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0">${incountry.av}</div><div><div style="font-size:12px;font-weight:500">${incountry.name}</div><div style="font-size:10.5px;color:var(--ink-soft)">Provider · ${incountry.role}</div></div></div>`:''}
-      <div style="display:flex;align-items:center;gap:8px;padding:5px 0"><div style="width:26px;height:26px;border-radius:50%;background:#EAF4F5;color:#0D7680;display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0">JD</div><div><div style="font-size:12px;font-weight:500">Jane Davies</div><div style="font-size:10.5px;color:var(--ink-soft)">Client · Legal Contact</div></div></div>
-    </div>
-    ${blocker?`<div class="info-card" style="background:var(--rr-bg);border-color:rgba(204,0,0,.2)"><div class="ic-title" style="color:var(--rr)">Active Blocker</div><p style="font-size:12px;color:var(--ink-mid);line-height:1.5;margin-bottom:10px">${blocker.name} not received. Progress suspended until uploaded.</p><button class="btn-p sm" style="width:100%" onclick="openUploadModal('${blocker.name.substring(0,25)}')">Upload Now</button></div>`:''}
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <button class="btn-s" style="width:100%" onclick="openUploadModal('Document')">📤 Upload Document</button>
-      <button class="btn-s" style="width:100%" onclick="toast('Comment thread opened','')">💬 Add Comment</button>
-    </div>`;
-
-        document.getElementById('pane-formation').innerHTML = `
-    <div class="case-main">
-      <div class="page-head">
-        <div class="ph-flag">${cas.flag}</div>
-        <div><div class="ph-h1">${cas.country} — ${cas.type}</div><div class="ph-sub">Case #${cas.id.toUpperCase()}-2025-001 · ${client.name} · ${cas.meta}</div></div>
-        <div class="s-pill sp-${cas.rag}">${cas.rag==='r'?'⛔ Blocked':cas.rag==='a'?'In Progress':'✓ Complete'}</div>
-      </div>
-      <div class="prog-wrap">
-        <span class="prog-lbl">Formation Progress</span>
-        <div class="prog-trk"><div class="prog-bar" style="width:${cas.pct}%"></div></div>
-        <span class="prog-num">${cas.pct}%</span>
-        <span style="font-size:11px;color:var(--ink-soft);white-space:nowrap;margin-left:4px">${complete} of ${docs.length} complete</span>
-      </div>
-      <div class="sec-hd">Client Documents</div>
-      ${clientDocs.map(renderDocRow).join('')}
-      <div class="sec-hd" style="margin-top:18px">Provider Documents</div>
-      ${providerDocs.map(renderDocRow).join('')}
-    </div>
-    <aside class="case-aside">${aside}</aside>`;
-    }
-
-    function toggleDocDrawer(id){
-        const el=document.getElementById(id); if(!el) return;
-        const open=el.style.display!=='none';
-        document.querySelectorAll('.doc-drawer,.d2-drawer').forEach(d=>d.style.display='none');
-        if(!open) el.style.display='block';
-    }
-
-    // ═══════════════════════════════════════════════
-    // DAY 2 PANE
-    // ═══════════════════════════════════════════════
-    function renderDay2Pane(caseId){
-        const cas = CASES.find(c=>c.id===caseId);
-        const client = CLIENTS.find(c=>c.id===cas.clientId);
-        const tasks = D2_TASKS[caseId] || [];
-        if(!tasks.length){
-            document.getElementById('pane-day2').innerHTML=`<div style="padding:40px;color:var(--ink-soft);text-align:center"><div style="font-size:32px;margin-bottom:12px">📅</div><div style="font-family:var(--fh);font-size:18px;margin-bottom:8px">Day 2 Obligations</div><div>Tax and compliance tasks will appear here once formation is complete.</div></div>`;
-            return;
-        }
-        const taxSummary = {
-            arm:{ 'Profit Tax':'18%','VAT Rate':'20%','VAT Threshold':'AMD 115M','Social Ins. Employer':'3.5%','Social Ins. Employee':'2.5–5%','Tax Year':'Dec 31' },
-            deu:{ 'Körperschaftsteuer':'15% + 5.5% soli','Trade Tax (Gewerbesteuer)':'~14–17% (varies)','VAT (Mehrwertsteuer)':'19% / 7%','VAT Threshold':'None (register on first supply)','Tax Year':'Dec 31' },
-        }[caseId]||{'Tax filing':'See country guide'};
-
-        const renderTask = (t) => `
-    <div class="tax-task tt-${t.rag==='g'?'g':t.rag==='upcoming'?'upcoming':'a'}" id="tt-${t.id}">
-      <div class="tt-main" onclick="toggleDocDrawer('d2d-${t.id}')">
-        <span class="tt-icon">${t.icon}</span>
-        <div class="tt-body">
-          <div class="tt-name${t.complete?' done':''}">${t.complete?'✓ ':''} ${t.name}</div>
-          <div class="tt-desc">${t.desc}</div>
-        </div>
-        <div class="tt-right">
-          <div class="tt-due ${t.dueClass||''}">${t.due}</div>
-          <span class="tt-freq">${t.freq}</span>
-        </div>
-        <div class="doc-acts" style="border-left:1px solid var(--rule)">
-          ${t.complete
-            ? `<button class="doc-btn dl" onclick="downloadDoc('${t.id.replace(/-/g,'_')}','${cas.clientId}');event.stopPropagation()">⬇</button>`
-            : t.rag!=='upcoming'
-                ? `<button class="doc-btn ul" onclick="openUploadModal('${t.name.substring(0,30)}');event.stopPropagation()">⬆</button>`
-                : `<button class="doc-btn" onclick="toast('Task scheduled — not yet active','');event.stopPropagation()">📅</button>`
-        }
-        </div>
-      </div>
-    </div>
-    <div id="d2d-${t.id}" class="d2-drawer" style="display:none">
-      <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
-        <div style="flex:1;min-width:180px">
-          <div class="dd-lbl">Filing type</div><div class="dd-val"><strong>${t.name}</strong></div>
-          <div class="dd-lbl">Frequency</div><div class="dd-val">${t.freq}</div>
-          <div class="dd-lbl">Status</div><div class="dd-val" style="color:var(--r${t.rag==='upcoming'?'a':t.rag})">${t.complete?'✓ Filed':'Pending'}</div>
-          ${t.complete?`<div class="dd-lbl">File UUID</div><div class="dd-uuid">${uuid()}</div>`:''}
-        </div>
-        <div style="flex:1;min-width:180px">
-          <div class="dd-lbl">Filing Steps</div>
-          <div class="d2-steps">${t.steps.map((s,i)=>`<div class="d2-step"><div class="d2-sn">${i+1}</div><span>${s}</span></div>`).join('')}</div>
-          ${!t.complete&&t.rag!=='upcoming'?`<button class="btn-p sm teal" style="margin-top:10px;width:100%" onclick="openUploadModal('${t.name.substring(0,30)}')">Upload Return / Confirmation</button>`:''}
-        </div>
-      </div>
-    </div>`;
-
-        const aside=`
-    <div class="info-card" style="border-top:3px solid var(--teal)">
-      <div class="ic-title">Tax Summary — ${cas.country}</div>
-      ${Object.entries(taxSummary).map(([k,v])=>`<div class="ic-row"><span>${k}</span><strong>${v}</strong></div>`).join('')}
-    </div>
-    <div class="info-card">
-      <div class="ic-title">D2 Progress</div>
-      <div class="ic-row"><span>Total obligations</span><strong>${tasks.length}</strong></div>
-      <div class="ic-row"><span>Complete</span><strong style="color:var(--rg)">${tasks.filter(t=>t.complete).length}</strong></div>
-      <div class="ic-row"><span>Pending</span><strong style="color:var(--ra)">${tasks.filter(t=>!t.complete&&t.rag!=='upcoming').length}</strong></div>
-      <div class="ic-row"><span>Scheduled</span><strong style="color:var(--ink-soft)">${tasks.filter(t=>t.rag==='upcoming').length}</strong></div>
-    </div>
-    <div class="indic"><span class="ai-badge">AI</span><span style="font-size:11.5px">Based on ${cas.country} case history: parallel-tracking VAT and profit tax prep saves an estimated <strong>8–12 days</strong> per cycle.</span></div>`;
-
-        document.getElementById('pane-day2').innerHTML=`
-    <div class="case-main">
-      <div class="page-head">
-        <div class="ph-flag">${cas.flag}</div>
-        <div><div class="ph-h1">${cas.country} — Day 2 Operations</div><div class="ph-sub">Ongoing tax &amp; compliance · ${client.name} ${cas.type}</div></div>
-        <div class="s-pill sp-a">3 Tasks Due</div>
-      </div>
-      <div class="indic"><span class="indic-badge">Indicative</span>Dates and amounts are representative based on standard obligations. Confirmed post-registration.</div>
-      <div class="d2-phases">
-        <div class="d2-card active"><div class="d2-num">Q1</div><div class="d2-lbl">2025 Obligations</div><div class="d2-status" style="color:var(--ra)">2 pending</div></div>
-        <div class="d2-card" onclick="toast('Q2 2025 — 3 tasks scheduled','teal')"><div class="d2-num">Q2</div><div class="d2-lbl">2025 Obligations</div><div class="d2-status" style="color:var(--ink-soft)">Scheduled</div></div>
-        <div class="d2-card" onclick="toast('Q3–Q4 2025 obligations forthcoming','teal')"><div class="d2-num">Q3–4</div><div class="d2-lbl">2025 Obligations</div><div class="d2-status" style="color:var(--ink-soft)">Forthcoming</div></div>
-        <div class="d2-card" onclick="toast('Annual accounts due Apr 2026','teal')"><div class="d2-num">2026</div><div class="d2-lbl">Annual Accounts</div><div class="d2-status" style="color:var(--ink-soft)">Apr 2026</div></div>
-      </div>
-      <div class="sec-hd">Q1 2025 — Quarterly Obligations</div>
-      ${tasks.filter(t=>t.rag!=='upcoming').map(renderTask).join('')}
-      <div class="sec-hd" style="margin-top:18px">Annual Obligations — 2025/2026</div>
-      ${tasks.filter(t=>t.rag==='upcoming').map(renderTask).join('')}
-    </div>
-    <aside class="case-aside">${aside}</aside>`;
-    }
-
-    // ═══════════════════════════════════════════════
-    // HISTORY PANE
-    // ═══════════════════════════════════════════════
-    function renderHistoryPane(caseId){
-        const cas = CASES.find(c=>c.id===caseId);
-        const client = CLIENTS.find(c=>c.id===cas.clientId);
-        const events = HISTORY[caseId]||[];
-        const formEvents = events.filter(e=>!e.cls||e.cls!=='d2');
-        const d2Events   = events.filter(e=>e.cls==='d2');
-
-        const renderEvent = (e) => `
-    <div class="tl-item">
-      <div class="tl-dot ${e.cls||''}">${e.dot}</div>
-      <div class="tl-body">
-        <div class="tl-act">${e.act}</div>
-        <div class="tl-time">${e.time}</div>
-        ${e.docLink?`<div class="tl-link" onclick="downloadDoc('${e.docLink.docName}','${e.docLink.caseId}')">⬇ ${e.docLink.label}</div>`:''}
-      </div>
-    </div>`;
-
-        const aside=`
-    <div class="info-card">
-      <div class="ic-title">History Summary</div>
-      <div class="ic-row"><span>Total events</span><strong>${events.length}</strong></div>
-      <div class="ic-row"><span>Formation events</span><strong>${formEvents.length}</strong></div>
-      <div class="ic-row"><span>Day 2 events</span><strong>${d2Events.length}</strong></div>
-      <div class="ic-row"><span>Docs w/ download</span><strong>${events.filter(e=>e.docLink).length}</strong></div>
-      <div class="ic-row"><span>Blockers raised</span><strong style="color:var(--rr)">${events.filter(e=>e.cls==='bl').length}</strong></div>
-    </div>
-    <div class="info-card">
-      <div class="ic-title">Export</div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-top:2px">
-        <button class="btn-s" style="width:100%;font-size:12px" onclick="toast('Exporting full audit trail…','teal')">⬇ Full Audit Trail (PDF)</button>
-        <button class="btn-s" style="width:100%;font-size:12px" onclick="toast('Exporting document index…','teal')">⬇ Document Index (CSV)</button>
-        <button class="btn-s" style="width:100%;font-size:12px" onclick="toast('Exporting filing calendar…','teal')">⬇ Filing Calendar (ICS)</button>
-      </div>
-    </div>`;
-
-        document.getElementById('pane-history').innerHTML=`
-    <div class="case-main">
-      <div class="page-head">
-        <div class="ph-flag">${cas.flag}</div>
-        <div><div class="ph-h1">${cas.country} — Full Case History</div><div class="ph-sub">Complete event log · ${client.name}</div></div>
-        <div class="s-pill sp-teal">${events.length} Events</div>
-      </div>
-      <div class="sec-hd">Formation Phase</div>
-      ${formEvents.map(renderEvent).join('')}
-      ${d2Events.length?`<div class="sec-hd" style="margin-top:20px">Day 2 — Tax &amp; Compliance</div>${d2Events.map(renderEvent).join('')}`:''}
-    </div>
-    <aside class="case-aside">${aside}</aside>`;
-    }
-
-    function updateCasePhaseBadges(caseId){
-        const cas=CASES.find(c=>c.id===caseId);
-        const docs=DOCS[caseId]||[];
-        const tasks=D2_TASKS[caseId]||[];
-        const fbadge=document.getElementById('pbadge-formation');
-        if(fbadge){ fbadge.textContent=cas.rag==='r'?'Blocked':cas.rag==='a'?'In Progress':'Complete'; fbadge.className='ph-badge phb-'+cas.rag; }
-        const d2badge=document.getElementById('pbadge-day2');
-        if(d2badge){ const due=tasks.filter(t=>!t.complete&&t.rag!=='upcoming').length; d2badge.textContent=due?due+' Due':'Up to date'; d2badge.className='ph-badge '+(due?'phb-a':'phb-g'); }
-        const hbadge=document.getElementById('pbadge-history');
-        const hist=HISTORY[caseId]||[];
-        if(hbadge){ hbadge.textContent=hist.length+' Events'; }
-    }
-
-    // ═══════════════════════════════════════════════
-    // REQUIREMENTS
-    // ═══════════════════════════════════════════════
-    function renderReqs(country){
-        const d=REQ_DATA[country]; if(!d) return;
-        document.getElementById('rq-time').textContent='⏱ '+d.time;
-        document.getElementById('rq-grid').innerHTML=d.cards.map(c=>`
-    <div class="rq-card">
-      <div class="rq-head"><span>${c.i}</span>${c.t}</div>
-      <div class="rq-body">${c.s.map((s,i)=>`<div class="rq-step"><div class="rq-sn">${i+1}</div><span>${s}</span></div>`).join('')}</div>
-    </div>`).join('');
-    }
-
-    // ═══════════════════════════════════════════════
-    // PROVIDER VIEW
-    // ═══════════════════════════════════════════════
-    function renderProviderOverview(){
-        const blocked=CASES.filter(c=>c.rag==='r');
-        const progress=CASES.filter(c=>c.rag==='a');
-        const ontrack=CASES.filter(c=>c.rag==='g');
-        document.getElementById('pv-overview').innerHTML=`
-    <div class="pv-h2-row"><div class="pv-h2">Provider Overview</div><div class="pv-h2-sub">All clients · Synkrisis Internal</div></div>
-    <div class="kpi-strip">
-      <div class="kpi k-c"><div class="kpi-v vc">${CLIENTS.length}</div><div class="kpi-l">Clients</div><div class="kpi-d up">↑ 1 this month</div></div>
-      <div class="kpi k-c"><div class="kpi-v vc">${CASES.length}</div><div class="kpi-l">Open Cases</div><div class="kpi-d">${new Set(CASES.map(c=>c.isoA3)).size} jurisdictions</div></div>
-      <div class="kpi k-r"><div class="kpi-v vr">${blocked.length}</div><div class="kpi-l">Blocked</div><div class="kpi-d dn">↑ 1 vs last week</div></div>
-      <div class="kpi k-a"><div class="kpi-v va">${progress.length}</div><div class="kpi-l">In Progress</div><div class="kpi-d">Avg 4.2 days open</div></div>
-      <div class="kpi k-g"><div class="kpi-v vg">${ontrack.length}</div><div class="kpi-l">On Track</div><div class="kpi-d up">↑ 2 vs last week</div></div>
-      <div class="kpi k-t"><div class="kpi-v vt">28</div><div class="kpi-l">Docs Pending</div><div class="kpi-d">14 client · 14 provider</div></div>
-    </div>
-    <div class="pv-h2-row"><div class="pv-h2">Active Blockers</div><div class="pv-h2-sub">Require immediate action</div></div>
-    ${blocked.map(c=>{ const cl=CLIENTS.find(x=>x.id===c.clientId); const doc=DOCS[c.id]?.find(d=>d.rag==='r'); return `
-    <div class="blocker">
-      <div class="bl-head"><span>${c.flag}</span><span class="bl-country">${c.country}</span><span class="bl-client">— ${cl.name}</span><span class="bl-age">8 days stale</span></div>
-      <div class="bl-desc">${doc?doc.name+' not received.':'Action required.'}</div>
-      <div class="bl-acts"><button class="btn-p sm" onclick="toast('Reminder sent','teal')">Chase Client</button><button class="btn-s sm" onclick="loadCase('${c.id}')">View Case</button></div>
-    </div>`;}).join('')}`;
-    }
-
-    function renderProviderClients(){
-        document.getElementById('pv-clients').innerHTML = CLIENTS.map(client=>{
-            const clientCases=CASES.filter(c=>c.clientId===client.id);
-            const overallRag=clientCases.some(c=>c.rag==='r')?'r':clientCases.some(c=>c.rag==='a')?'a':'g';
-            return `
-    <div style="margin-bottom:22px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <span style="font-family:var(--fh);font-size:15px;font-weight:700">${client.name}</span>
-        <span style="font-size:11px;color:var(--ink-soft)">US · ${client.sector} · ${clientCases.length} ${clientCases.length===1?'case':'cases'}</span>
-        <span class="rag-label ${overallRag}" style="margin-left:auto">${overallRag==='r'?'Blocked':overallRag==='a'?'In Progress':'On Track'}</span>
-      </div>
-      <div class="data-tbl">
-        <div class="dt-head" style="grid-template-columns:1.6fr 1fr 0.6fr 1.1fr 0.8fr 0.5fr"><span>Jurisdiction</span><span>Entity</span><span>Docs</span><span>Progress</span><span>Status</span><span></span></div>
-        ${clientCases.map(c=>{ const docs=DOCS[c.id]||[]; const done=docs.filter(d=>d.complete).length; return `
-        <div class="dt-row" style="grid-template-columns:1.6fr 1fr 0.6fr 1.1fr 0.8fr 0.5fr" onclick="loadCase('${c.id}')">
-          <div><span style="font-size:15px">${c.flag}</span> <span class="cell-s">${c.country}</span></div>
-          <div>${c.type}</div>
-          <div>${done}/${docs.length||'—'}</div>
-          <div><div style="font-size:11px;color:var(--ink-soft)">${c.pct}%</div><div class="mini-bar"><div class="mini-fill" style="width:${c.pct}%"></div></div></div>
-          <div><span class="rag-label ${c.rag}">${c.rag==='r'?'Blocked':c.rag==='a'?'In Progress':'On Track'}</span></div>
-          <div><span style="color:var(--teal);font-size:12px;font-weight:500;cursor:pointer">View →</span></div>
-        </div>`}).join('')}
-      </div>
-    </div>`;}).join('');
-    }
-
-    function renderProviderStaff(){
-        document.getElementById('pv-staff').innerHTML=`
-    <div class="pv-h2-row"><div class="pv-h2">By Staff Member</div><div class="pv-h2-sub">Provider team workload &amp; KPIs</div></div>
-    <div class="kpi-strip">
-      <div class="kpi k-a"><div class="kpi-v va">${STAFF.reduce((s,x)=>s+(x.stale>0?1:0),0)}</div><div class="kpi-l">Staff with Stale Tasks</div></div>
-      <div class="kpi k-c"><div class="kpi-v vc">${STAFF.length}</div><div class="kpi-l">Staff Active</div></div>
-      <div class="kpi k-t"><div class="kpi-v vt">${(STAFF.reduce((s,x)=>s+x.avgDays,0)/STAFF.length).toFixed(1)}d</div><div class="kpi-l">Avg Task Age</div></div>
-      <div class="kpi k-g"><div class="kpi-v vg">91%</div><div class="kpi-l">On-time Rate</div></div>
-    </div>
-    <div class="data-tbl">
-      <div class="dt-head" style="grid-template-columns:1.6fr 0.8fr 0.5fr 0.8fr 1fr 0.9fr 0.6fr">
-        <span>Staff Member</span><span>Role / Region</span><span>Open</span><span>Stale (&gt;3d)</span><span>Workload</span><span>Avg Completion</span><span>KPI</span>
-      </div>
-      ${STAFF.map(s=>{
-            const wbClass=s.workload>85?'hi':s.workload>65?'mid':'lo';
-            const rowBg=s.rag==='r'?'background:var(--rr-bg)':'';
-            return `
-        <div class="dt-row" style="grid-template-columns:1.6fr 0.8fr 0.5fr 0.8fr 1fr 0.9fr 0.6fr;${rowBg}">
-          <div style="display:flex;align-items:center;gap:9px">
-            <div style="width:28px;height:28px;border-radius:50%;background:${s.avBg};color:${s.avFg};display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0">${s.av}</div>
-            <div><div class="cell-s">${s.name}</div><div class="cell-sub">${s.region}</div></div>
-          </div>
-          <div><div style="font-size:12px;color:var(--ink-soft)">${s.role}</div></div>
-          <div><strong>${s.open}</strong></div>
-          <div>${s.stale>0?`<span class="stale">${s.stale} task${s.stale>1?'s':''} · avg ${s.avgDays}d</span>`:`<span style="color:var(--rg);font-weight:600;font-size:12px">0</span>`}</div>
-          <div class="wb-wrap"><div class="wb-trk"><div class="wb-fill ${wbClass}" style="width:${s.workload}%"></div></div><div class="wb-lbl">${s.workload}% capacity</div></div>
-          <div style="color:var(--r${s.rag});font-weight:600;font-size:12px">${s.avgDays} days</div>
-          <div><span class="rag-label ${s.rag}" style="font-size:11px">${s.rag==='r'?'At Risk':s.rag==='a'?'Monitor':'On Track'}</span></div>
-        </div>`}).join('')}
-    </div>`;
-    }
-
-    function renderProviderInsights(){
-        document.getElementById('pv-insights').innerHTML=`
-    <div class="pv-h2-row"><div class="pv-h2">AI Process Insights</div><div class="pv-h2-sub">Based on historical task duration data · <em style="color:var(--teal)">indicative — not yet live</em></div></div>
-    <div class="ai-card">
-      <div class="ai-card-head"><span class="ai-badge">AI</span><span class="ai-card-title">Bottleneck Detection</span><span class="ai-card-note">From task duration history</span></div>
-      <div class="ai-card-body">
-        <div class="ai-finding"><div class="ai-fi">⏱</div><div class="ai-ft"><strong>Client document handover</strong> is the single largest delay source. Average client response time is <strong>6.8 days</strong> vs 3-day target. Automated reminders at days 2 and 4 could reduce this to an estimated <em>3.9 days</em>.<div class="ai-impact">Potential saving: 2.9 days avg per case</div></div></div>
-        <div class="ai-finding"><div class="ai-fi">🇩🇪</div><div class="ai-ft"><strong>German notarial appointment scheduling</strong> consistently takes 9–14 days. Pre-booking notary slots 3 weeks before anticipated client doc receipt has reduced wait time by <em>40%</em> in comparable practices.<div class="ai-impact">Potential saving: 5–7 days per German case</div></div></div>
-        <div class="ai-finding"><div class="ai-fi">📊</div><div class="ai-ft"><strong>Brian Ohanyan's task queue</strong> is at 92% capacity with 5 stale items averaging 6.2 days. Historical data shows reassignment to David Tan (55% capacity) reduces average completion time by <em>38%</em> for standard filing tasks.<div class="ai-impact">Recommended: Reassign 3 tasks to D. Tan</div></div></div>
-      </div>
-    </div>
-    <div class="ai-card">
-      <div class="ai-card-head"><span class="ai-badge">AI</span><span class="ai-card-title">Process Improvement Opportunities</span><span class="ai-card-note">Pattern analysis across 48 completed cases</span></div>
-      <div class="ai-card-body">
-        <div class="ai-finding"><div class="ai-fi">📋</div><div class="ai-ft">Cases where <strong>document checklists are shared at case opening</strong> complete <em>31% faster</em>. 2 of ${CASES.length} current cases did not receive a checklist at opening.<div class="ai-impact">Recommended: Enforce checklist dispatch on case creation</div></div></div>
-        <div class="ai-finding"><div class="ai-fi">🌍</div><div class="ai-ft"><strong>Armenia LLC formations</strong> show a consistent 12-day gap between state registration and tax registration. Parallel-tracking these workstreams reduces total duration by <em>8–12 days</em>.<div class="ai-impact">Potential saving: 8–12 days per Armenia case</div></div></div>
-        <div class="ai-finding"><div class="ai-fi">💬</div><div class="ai-ft">Cases with a <strong>single named client contact</strong> have a <em>2.4× higher</em> document return rate within SLA vs shared mailboxes. 1 of ${CASES.length} current cases lacks a named contact.<div class="ai-impact">Recommended: Enforce named contact at onboarding</div></div></div>
-        <div class="ai-finding"><div class="ai-fi">🇸🇬</div><div class="ai-ft"><strong>Singapore formations</strong> are consistently fastest in APAC — avg <em>8.3 days</em> from instruction to UEN receipt. Consider positioning Singapore as the default APAC hub recommendation for clients with multi-country expansion plans.<div class="ai-impact">Upsell opportunity: Hub + spoke APAC strategy</div></div></div>
-      </div>
-    </div>`;
-    }
-
-    // ═══════════════════════════════════════════════
-    // NEW CASE MODAL
-    // ═══════════════════════════════════════════════
-    function openNewCaseModal(country, flag){
-        if(country) { document.getElementById('nc-title').textContent='New Case — '+country; }
-        updateNCFlag();
-        refreshNCDocs();
-        openModal('newCaseModal');
-    }
-
-    function updateNCFlag(){
-        const val=document.getElementById('nc-juris').value;
-        document.getElementById('nc-flag').textContent=COUNTRY_FLAGS[val]||'🌍';
-    }
-
-    function refreshNCDocs(){
-        const type=document.getElementById('nc-entity').value;
-        const docs=NC_DOCS[type]||[];
-        document.getElementById('nc-docs').innerHTML=docs.map(d=>`
-    <div class="dp-item">${d.n}<span class="own-tag ${d.o==='client'?'ot-c':'ot-p'}" style="margin-left:auto">${d.o}</span></div>`).join('');
-    }
-
-    // ═══════════════════════════════════════════════
-    // LEAFLET MAP
-    // ═══════════════════════════════════════════════
-    const lmap = L.map('map',{center:[51.45,-2.6],zoom:3,zoomControl:false,minZoom:3,maxZoom:8,worldCopyJump:false,maxBoundsViscosity:1.0});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(lmap);
-    L.control.zoom({position:'bottomright'}).addTo(lmap);
-
-    const activeISO = new Set(CASES.map(c=>c.isoA3));
-    const AVAILABLE_ISO = new Set(['AUS','CAN','GBR','IRL','DEU','FRA','NLD','BEL','CHE','AUT','SWE','NOR','DNK','FIN','ESP','PRT','ITA','POL','CZE','SVK','HUN','SGP','JPN','KOR','TWN','NZL','IND','MEX','BRA','CHL','COL','PER','ARG','ZAF','NGA','KEN','GHA','MAR','ARE','SAU','QAT','KWT','BHR','OMN','ISR','JOR','ARM','GEO','AZE','MYS','THA','IDN','VNM','PHL','BGD','LKA','URY','ECU','BOL','CRI','PAN']);
-
-    const ragColors = { r: '#CC0000', a: '#B35C00', g: '#0A6640' };
-
-    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
-        .then(r=>r.json())
-        .then(geo=>{
-            L.geoJSON(geo,{
-                style: f=>{
-                    const iso=f.properties.ADM0_A3;
-                    const activeCase=CASES.find(c=>c.isoA3===iso);
-                    if(activeCase){ const col=ragColors[activeCase.rag]; return {color:col,weight:1.5,fillColor:col,fillOpacity:.22,opacity:.7}; }
-                    if(AVAILABLE_ISO.has(iso)) return {color:'#0D7680',weight:.8,fillColor:'#0D7680',fillOpacity:.08,opacity:.4};
-                    return {color:'#D9D0C4',weight:.4,fillColor:'#D9D0C4',fillOpacity:.04,opacity:.25};
-                },
-                onEachFeature:(f,layer)=>{
-                    const iso=f.properties.ADM0_A3;
-                    const name=f.properties.NAME;
-                    const activeCase=CASES.find(c=>c.isoA3===iso);
-                    if(activeCase){
-                        const statusMap={r:'Blocked',a:'In Progress',g:'On Track'};
-                        layer.on('click',()=>openMapPanel(activeCase.id));
-                        layer.on('mouseover',function(){this.setStyle({fillOpacity:.38});});
-                        layer.on('mouseout',function(){this.setStyle({fillOpacity:.22});});
-                        layer.bindTooltip(`<div class="lp-flag">${activeCase.flag}</div><div class="lp-name">${activeCase.country}</div><div class="lp-row">Status: <span class="lp-${activeCase.rag}">${statusMap[activeCase.rag]}</span></div><div class="lp-row">${activeCase.pct}% complete</div><button class="lp-btn" onclick="openMapPanel('${activeCase.id}')">View Case →</button>`,{permanent:false,sticky:false,direction:'top',offset:[0,-4],className:''});
-                    } else if(AVAILABLE_ISO.has(iso)){
-                        layer.on('mouseover',function(){this.setStyle({fillOpacity:.2});});
-                        layer.on('mouseout', function(){this.setStyle({fillOpacity:.08});});
-                        layer.on('click',()=>openNewCaseModal(name));
-                        layer.bindTooltip(`<strong>${name}</strong><br><span style="color:var(--teal);font-size:11px">Available — click to add case</span>`,{sticky:true,direction:'top'});
-                    }
-                }
-            }).addTo(lmap);
-
-            // RAG bubble markers for active cases
-            CASES.forEach(c=>{
-                const icon=L.divIcon({className:'',html:`<div class="rag-bubble ${c.rag}"></div>`,iconSize:[18,18],iconAnchor:[9,9],popupAnchor:[0,-12]});
-                const m=L.marker([c.lat,c.lng],{icon}).addTo(lmap);
-                m.on('click',()=>openMapPanel(c.id));
-            });
-
-            updateMapStats();
-        })
-        .catch(()=>{
-            // Fallback if GeoJSON fails to load
-            const fallback=[[[-44,113],[-10,154]],[[35,-10],[71,32]],[[1,95],[28,141]],[[41,-141],[84,-52]],[[-55,-82],[12,-33]]];
-            fallback.forEach(b=>L.rectangle(b,{color:'#0D7680',weight:0,fillColor:'#0D7680',fillOpacity:.08}).addTo(lmap).on('click',()=>openNewCaseModal('this region')));
-            CASES.forEach(c=>{ const icon=L.divIcon({className:'',html:`<div class="rag-bubble ${c.rag}"></div>`,iconSize:[18,18],iconAnchor:[9,9]}); L.marker([c.lat,c.lng],{icon}).addTo(lmap).on('click',()=>openMapPanel(c.id)); });
-            updateMapStats();
-        });
-
-    function updateMapStats(){
-        const total=CASES.length;
-        const blocked=CASES.filter(c=>c.rag==='r').length;
-        const progress=CASES.filter(c=>c.rag==='a').length;
-        const ontrack=CASES.filter(c=>c.rag==='g').length;
-        document.getElementById('stat-total').textContent=total;
-        document.getElementById('stat-blocked').textContent=blocked;
-        document.getElementById('stat-progress').textContent=progress;
-        document.getElementById('stat-ontrack').textContent=ontrack;
-    }
-
-    function openMapPanel(caseId){
-        const cas=CASES.find(c=>c.id===caseId);
-        const docs=DOCS[caseId]||[];
-        const cl=CLIENTS.find(c=>c.id===cas.clientId);
-        document.getElementById('mp-flag').textContent=cas.flag;
-        document.getElementById('mp-country').textContent=cas.country+' — '+cl.name;
-        document.getElementById('mp-meta').textContent=cas.meta;
-        document.getElementById('mp-fill').style.width=cas.pct+'%';
-        document.getElementById('mp-pct').textContent=cas.pct+'%';
-        const cDocs=docs.filter(d=>d.owner==='client');
-        const pDocs=docs.filter(d=>d.owner==='provider');
-        const renderDoc=d=>`<div class="mp-doc"><div class="mp-dot ${d.rag}"></div><span class="mp-dn">${d.name}</span><span class="own-tag ${d.owner==='client'?'ot-c':'ot-p'}">${d.owner==='client'?'Client':'Provider'}</span></div>`;
-        document.getElementById('mp-body').innerHTML=(cDocs.length?`<div class="mp-sec">Client Documents</div>${cDocs.map(renderDoc).join('')}`:'')+(pDocs.length?`<div class="mp-sec">Provider Documents</div>${pDocs.map(renderDoc).join('')}`:'');
-        document.getElementById('mp-open-btn').onclick=()=>{ loadCase(caseId); closeMapPanel(); };
-        document.getElementById('mapPanel').classList.add('open');
-        lmap.closePopup();
-    }
-
-    function closeMapPanel(){ document.getElementById('mapPanel').classList.remove('open'); }
-
-    // ═══════════════════════════════════════════════
-    // ALERTS PANEL
-    // ═══════════════════════════════════════════════
-    function toggleAlerts(e){
-        e.stopPropagation();
-        const p = document.getElementById('alertPanel');
-        p.style.display = p.style.display === 'none' ? 'block' : 'none';
-    }
-    function closeAlerts(){ document.getElementById('alertPanel').style.display = 'none'; }
-    document.addEventListener('click', e => {
-        const p = document.getElementById('alertPanel');
-        if(p && !p.contains(e.target) && e.target.id !== 'alertBell') closeAlerts();
+// Remove particles that aren't on the canvas
+var cleanUpArray = function () {
+    particles = particles.filter((p) => {
+      return (p.x > -100 && p.y > -100);
     });
+};
 
-    // ═══════════════════════════════════════════════
-    // WELCOME MODAL
-    // ═══════════════════════════════════════════════
-    function closeWelcome(){ closeModal('welcomeModal'); }
 
-    // ═══════════════════════════════════════════════
-    // INIT
-    // ═══════════════════════════════════════════════
-    // Start as Client — hide provider tab on load
-    document.getElementById('tab-provider').style.display = 'none';
-    renderSidebar();
-    loadCase('arm');
-    renderReqs('am');
-    renderProviderOverview();
-    renderProviderClients();
-    renderProviderStaff();
-    renderProviderInsights();
-    refreshNCDocs();
-    updateNCFlag();
-    document.getElementById('rq-country').addEventListener('change',e=>renderReqs(e.target.value));
-    // Welcome modal shown on load via class="modal-bd open" in HTML
+var initParticles = function (numParticles, x, y) {
+    for (let i = 0; i < numParticles; i++) {
+        particles.push(new Particle(x, y));
+    }
+    particles.forEach((p) => {
+        drawParticle(p.x, p.y, p.r, p.c);
+    });
+};
+
+// That thing
+window.requestAnimFrame = (function() {
+  return window.requestAnimationFrame ||
+     window.webkitRequestAnimationFrame ||
+     window.mozRequestAnimationFrame ||
+     function(callback) {
+        window.setTimeout(callback, 1000 / 60);
+     };
+})();
+
+
+// Our Frame function
+var frame = function () {
+  // Draw background first
+  drawBg(ctx, colorPalette.bg);
+  // Update Particle models to new position
+  particles.map((p) => {
+    return updateParticleModel(p);
+  });
+  // Draw em'
+  particles.forEach((p) => {
+      drawParticle(p.x, p.y, p.r, p.c);
+  });
+  // Play the same song? Ok!
+  window.requestAnimFrame(frame);
+};
+
+// Click listener
+document.body.addEventListener("click", function (event) {
+    var x = event.clientX,
+        y = event.clientY;
+    cleanUpArray();
+    initParticles(config.particleNumber, x, y);
+});
+
+// First Frame
+frame();
+
+// First particle explosion
+//initParticles(config.particleNumber);
 </script>
-</body>
-</html>
